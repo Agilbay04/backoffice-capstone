@@ -6,9 +6,9 @@ Projek dashboard backoffice yang dibangun menggunakan Vite, React, dan pnpm. Pro
 
 ### 15 Mei, Jumat: Kickoff, Mental Model, dan Project Setup
 
-Hari pertama difokuskan pada inisialisasi projek dan penyelarasan mental model antara backend development ke frontend development.
+Hari pertama melakukan init projek dengan Vite dan menerapkan struktur folder sesuai dengan guideline.
 
-**Aktivitas yang dilakukan:**
+**Aktivitas:**
 
 - **Scaffold Project**: Inisialisasi projek menggunakan Vite dengan template React + TypeScript.
 - **Package Management**: Menggunakan `pnpm` untuk manajemen package.
@@ -20,4 +20,4 @@ Hari pertama difokuskan pada inisialisasi projek dan penyelarasan mental model a
   - `src/libs`: Konfigurasi library pihak ketiga.
   - `src/types` & `src/utils`: Tipe data global dan fungsi pembantu.
 - **Initial Domain Model**: Mendefinisikan tipe data `UserListQuery` dan konstanta default untuk fitur User Management.
-- **Static UI**: Implementasi halaman awal `UsersPage` menggunakan Semantic HTML (table, header, main) untuk memverifikasi render awal di `App.tsx`.
+- **Static UI**: Implementasi halaman awal `UsersPage` menggunakan Semantic HTML (table, header, main) untuk render awal di `App.tsx`.
