@@ -6,7 +6,7 @@ Projek dashboard backoffice yang dibangun menggunakan Vite, React, dan pnpm. Pro
 
 ### 15 Mei, Jumat: Kickoff, Mental Model, dan Project Setup
 
-Hari pertama melakukan init projek dengan Vite dan menerapkan struktur folder sesuai dengan guideline.
+Hari pertama melakukan init projek dengan Vite dan menerapkan struktur project sesuai dengan guideline.
 
 **Aktivitas:**
 
