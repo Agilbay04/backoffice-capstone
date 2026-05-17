@@ -12,7 +12,7 @@ export default function UsersPage() {
     <main>
       <div style={{ marginBottom: '20px' }}>
         <h1>User Management</h1>
-        <p style={{ color: '#64748b' }}>Manage user roles and permissions.</p>
+        <p style={{ color: '#64748b', marginTop: '15px' }}>Manage user roles and permissions.</p>
       </div>
 
       <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
