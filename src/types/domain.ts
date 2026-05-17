@@ -1,0 +1,26 @@
+export type UserRole = 'admin' | 'operator' | 'manager';
+export type UserStatus = 'active' | 'inactive';
+
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    status: UserStatus;
+    createdAt: string;
+}
+
+export interface Request {
+    id: string;
+    title: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requsetBy: string;
+    createdAt: string;
+}
+
+export interface AuditLog {
+    id: string;
+    actor: string;
+    action: string;
+    timestamp: string;
+}
