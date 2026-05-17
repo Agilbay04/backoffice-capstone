@@ -28,8 +28,7 @@ export default function App() {
       <div className="main-area">
         {/* TOPBAR COMPONENT */}
         <header className="topbar">
-          <div><strong>Role: {MOCK_SIGNED_IN_USER.role.toUpperCase()}</strong></div>
-          <div>Logged in as: <strong>{MOCK_SIGNED_IN_USER.name}</strong></div>
+          <div>Logged in as: <strong>{MOCK_SIGNED_IN_USER.name} ({MOCK_SIGNED_IN_USER.role.toUpperCase()})</strong></div>
         </header>
 
         {/* PAGE CONTENT */}
