@@ -32,3 +32,4 @@ Hari kedua mempelajari konsep dasar React, bagaimana browser merender elemen, im
 - **Domain Modeling**: Mendefinisikan kontrak data atau tipe data global untuk entitas utama aplikasi (`User`, `Request`, `AuditLog`) di dalam file `src/types/domain.ts`.
 - **Component Extraction**: Mengekstrak elemen UI menjadi komponen terisolasi yang *reusable* (`src/common/StatusBadge.tsx`) menggunakan **TypeScript Props** untuk mengatur variasi visual berdasarkan status pengguna (`active`, `inactive`).
 - **Inline Styling Concept**: Mempelajari teknik penulisan *inline style* pada JSX menggunakan *double brackets* (`{{ }}`) untuk melemparkan object JavaScript, serta konversi sintaks CSS ke format *camelCase*.
+- **Local State Filtering**: Menggunakan React `useState` untuk filter user berdasarkan pencarian, role, dan status, serta menerapkan model data `UserListQuery` yang sudah didefinisikan sebelumnya.
