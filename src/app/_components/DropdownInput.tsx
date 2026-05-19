@@ -29,11 +29,11 @@ function DropdownInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             style={{ 
-            padding: '8px', 
-            borderRadius: '4px', 
-            border: '1px solid #cbd5e1', 
-            background: '#fff',
-            cursor: 'pointer'
+                padding: '8px', 
+                borderRadius: '4px', 
+                border: '1px solid #cbd5e1', 
+                background: '#fff',
+                cursor: 'pointer'
             }}
         >
             {options.map((option) => (
