@@ -32,5 +32,4 @@ function StatusBadge({ status }: StatusBadgeProps) {
     );
 }
 
-// export default StatusBadge;
 export default React.memo(StatusBadge);
