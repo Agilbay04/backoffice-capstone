@@ -30,6 +30,14 @@ Hari kedua mempelajari konsep dasar React, bagaimana browser merender elemen, im
 
 - **Web Layouting & App Shell**: Membangun struktur layout Dashboard/Backoffice utama (`App.tsx`) menggunakan vanilla CSS (`src/index.css`) berbasis **Flexbox** (`flex-direction: row` dan `column`) serta memahami konsep **CSS Box Model**.
 - **Domain Modeling**: Mendefinisikan kontrak data atau tipe data global untuk entitas utama aplikasi (`User`, `Request`, `AuditLog`) di dalam file `src/types/domain.ts`.
-- **Component Extraction**: Mengekstrak elemen UI menjadi komponen terisolasi yang *reusable* (`src/common/StatusBadge.tsx`) menggunakan **TypeScript Props** untuk mengatur variasi visual berdasarkan status pengguna (`active`, `inactive`).
 - **Inline Styling Concept**: Mempelajari teknik penulisan *inline style* pada JSX menggunakan *double brackets* (`{{ }}`) untuk melemparkan object JavaScript, serta konversi sintaks CSS ke format *camelCase*.
 - **Local State Filtering**: Menggunakan React `useState` untuk filter user berdasarkan pencarian, role, dan status, serta menerapkan model data `UserListQuery` yang sudah didefinisikan sebelumnya.
+- **Data Isolation**: Memisahkan mock data statis (`MOCK_USERS`) dan opsi menu ke dalam folder khusus `src/app/users/_mocks/` guna menjaga kerapian berkas halaman utama.
+- **Component Extraction**:
+  - Mengekstrak search input menjadi komponen `<SearchInput>`
+  - Mengekstrak dropdown input menjadi komponen generik `<DropdownInput />`
+  - Mengekstrak tabel User menjadi komponen privat `<UserTable />` khusus untuk modul `users`.
+- **Performance Optimization**:
+  - Menggunakan `useMemo` untuk melakukan *caching* pada hasil `.filter()` data user.
+  - Menggunakan `useCallback` untuk *caching* memori dari fungsi *handler* perubahan filter di parent component.
+  - Menerapkan `React.memo` pada komponen `<StatusBadge />`, `<SearchInput />`, `<DropdownInput />`, dan `<UserTable />` untuk mencegah render ulang yang tidak diperlukan jika tidak terdapat perubahan *props*.
