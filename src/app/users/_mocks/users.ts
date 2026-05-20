@@ -1,4 +1,4 @@
-import type { User } from '../../../types/domain';
+import type { User } from '@/types/domain';
 
 export const MOCK_USERS: User[] = [
   { id: '1', name: 'Mama Ghufron', email: 'ghufron@example.com', role: 'admin', status: 'active', createdAt: '2026-05-15' },
