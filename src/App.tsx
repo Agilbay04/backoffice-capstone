@@ -1,38 +1,40 @@
-import UsersPage from "./app/users/page"
+import UsersPage from "./app/users/page";
+import { MOCK_USERS } from "./app/users/_mocks/users";
 import type { User } from "./types/domain";
+import { MOCK_MENUS } from "./app/users/_mocks/menus";
 
-const MOCK_SIGNED_IN_USER: User = {
-  id: '334123',
-  name: 'Mama Ghufron',
-  email: 'ghufron@example.com',
-  role: 'admin',
-  status: 'active',
-  createdAt: '2026-05-15'
-}
-
+const MOCK_SIGNED_IN_USER: User = MOCK_USERS[0];
 
 export default function App() {
-  return (<div className="app-shell">
+  return (
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans">
       {/* SIDEBAR COMPONENT */}
-      <aside className="sidebar">
-        <h2>Back Office</h2>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
-          <a href="#dashboard" style={{ color: '#94a3b8', textDecoration: 'none' }}>Dashboard</a>
-          <a href="#users" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 'bold' }}>User</a>
-          <a href="#requests" style={{ color: '#94a3b8', textDecoration: 'none' }}>Requests</a>
-          <a href="#logs" style={{ color: '#94a3b8', textDecoration: 'none' }}>Audit Logs</a>
+      <aside className="w-64 bg-slate-900 text-white p-5 flex flex-col gap-5">
+        <h2 className="text-xl font-bold tracking-wider text-center text-white">Back Office</h2>
+        <nav className="flex flex-col gap-2 mt-4">
+          {MOCK_MENUS.map((menu) => (
+            <a
+              key={menu?.id}
+              href={menu?.url}
+              className="px-4 py-2 rounded text-slate-400 hover:bg-slate-800 hover:text-white transition-colors no-underline hover:font-bold"
+            >
+              {menu?.name}
+            </a>
+          ))}
         </nav>
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <div className="main-area">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* TOPBAR COMPONENT */}
-        <header className="topbar">
-          <div>Logged in as: <strong>{MOCK_SIGNED_IN_USER.name} ({MOCK_SIGNED_IN_USER.role.toUpperCase()})</strong></div>
+        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-end shadow-sm">
+          <div className="text-sm text-slate-600">
+            Logged in as: <strong className="text-slate-900">{MOCK_SIGNED_IN_USER.name} ({MOCK_SIGNED_IN_USER.role.toUpperCase()})</strong>
+          </div> 
         </header>
 
         {/* PAGE CONTENT */}
-        <div className="content-area">
+        <div className="flex-1 p-6 overflow-y-hidden">
           <UsersPage />
         </div>
       </div>

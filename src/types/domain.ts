@@ -10,6 +10,23 @@ export interface User {
     createdAt: string;
 }
 
+export interface Role {
+    id: string;
+    name: string;
+}
+
+export interface Menu {
+    id: string;
+    name: string;
+    url: string;
+    icon: string;
+}
+
+export interface DropdownOption {
+    key: string;
+    value: string;
+}
+
 export interface Request {
     id: string;
     title: string;

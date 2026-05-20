@@ -8,25 +8,19 @@ interface StatusBadgeProps {
 function StatusBadge({ status }: StatusBadgeProps) {
     console.log(`StatusBadge [${status}] is rendered`);
 
-    const getBadgeStyle = () => {
+    const getBadgeClass = () => {
         switch (status) {
             case 'active':
-                return { backgroundColor: '#dcfce7', color: '#166534' }
+                return 'bg-green-100 text-green-800';
             case 'inactive':
-                return { backgroundColor: '#f1f5f9', color: '#475569' }
+                return 'bg-slate-100 text-slate-600';
             default:
-                return { backgroundColor: '#e2e8f0', color: '#1e293b' }
+                return 'bg-amber-100 text-amber-800';
         } 
     };
 
     return (
-        <span style={{
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            ...getBadgeStyle()
-        }}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide ${getBadgeClass()}`}>
             {status.toUpperCase()}
         </span>
     );

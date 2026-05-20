@@ -21,9 +21,12 @@ function SearchInput({
 
     const [innerValue, setInnerValue] = useState<string>(value);
 
-    useEffect(() => {
+    const [prevValue, setPrevValue] = useState<string>(value);
+
+    if (value !== prevValue) {
         setInnerValue(value);
-    } , [value]);
+        setPrevValue(value);
+    }
 
     useEffect(() => {
         if (innerValue === value) return;
@@ -36,20 +39,34 @@ function SearchInput({
     }, [innerValue, debounceDelay, onChange, value]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flex: 1, width: '150px', ...style }}>
-        <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#475569' }}>{label}</label>
-        <input
-            type="text"
-            placeholder={placeholder}
-            value={innerValue}
-            onChange={(e) => setInnerValue(e.target.value)}
-            style={{ 
-                padding: '8px', 
-                borderRadius: '4px', 
-                border: '1px solid #cbd5e1', 
-                ...style 
-            }}
-        />
+        <div className="flex flex-col gap-1.5 w-full" style={style}>
+            <label className="text-sm font-bold text-slate-600">
+                {label}
+            </label>
+            <input
+                type="text"
+                placeholder={placeholder}
+                value={innerValue}
+                onChange={(e) => setInnerValue(e.target.value)}
+                className="
+                    w-full 
+                    px-3 
+                    py-2 
+                    text-sm 
+                    bg-white 
+                    border 
+                    border-slate-300 
+                    rounded-md 
+                    shadow-sm 
+                    placeholder-slate-400 
+                    focus:outline-none 
+                    focus:border-slate-900 
+                    focus:ring-1 
+                    focus:ring-slate-900 
+                    transition-all
+                    font-medium
+                "
+            />
         </div>
     );
 }
