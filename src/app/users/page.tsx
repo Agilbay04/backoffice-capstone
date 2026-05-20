@@ -59,7 +59,7 @@ export default function UsersPage() {
   return (
     <main className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">User Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Users Management</h1>
         <p className="text-sm text-slate-500 mt-1">Manage user roles and permissions.</p>
       </div>
 
