@@ -14,7 +14,7 @@ export interface Request {
     id: string;
     title: string;
     status: 'pending' | 'approved' | 'rejected';
-    requsetBy: string;
+    requestedBy: string;
     createdAt: string;
 }
 
