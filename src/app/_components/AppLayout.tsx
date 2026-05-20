@@ -40,7 +40,7 @@ export default function AppLayout() {
           </div>
         </header>
 
-        {/* PAGE CONTENT — diganti sesuai route */}
+        {/* PAGE CONTENT */}
         <div className="flex-1 p-6 overflow-y-auto">
           <Outlet />
         </div>
