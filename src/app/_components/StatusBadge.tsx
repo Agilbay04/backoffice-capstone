@@ -1,5 +1,6 @@
 import React from "react";
 import type { UserStatus } from "../../types/domain";
+import { Badge } from "@/app/_components/ui/badge";
 
 interface StatusBadgeProps {
     status: UserStatus;
@@ -8,21 +9,24 @@ interface StatusBadgeProps {
 function StatusBadge({ status }: StatusBadgeProps) {
     console.log(`StatusBadge [${status}] is rendered`);
 
-    const getBadgeClass = () => {
+    const getBadgeVariant = () => {
         switch (status) {
             case 'active':
-                return 'bg-green-100 text-green-800';
+                return 'green';
             case 'inactive':
-                return 'bg-slate-100 text-slate-600';
+                return 'secondary';
             default:
-                return 'bg-amber-100 text-amber-800';
+                return 'default';
         } 
     };
 
     return (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide ${getBadgeClass()}`}>
-            {status.toUpperCase()}
-        </span>
+        <Badge 
+            variant={getBadgeVariant()} 
+            className="capitalize px-2.5 py-0.5 tracking-wide font-semibold rounded-full"
+        >
+            {status}
+        </Badge>
     );
 }
 

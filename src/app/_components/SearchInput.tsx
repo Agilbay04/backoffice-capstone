@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Input } from "@/app/_components/ui/input";
+import { Label } from "@/app/_components/ui/label";
 
 interface SearchInputProps {
     label: string;
@@ -40,31 +42,19 @@ function SearchInput({
 
     return (
         <div className="flex flex-col gap-1.5 w-full" style={style}>
-            <label className="text-sm font-bold text-slate-600">
-                {label}
-            </label>
-            <input
+            <Label className="text-sm font-bold text-slate-600">{label}</Label>
+            <Input
                 type="text"
                 placeholder={placeholder}
                 value={innerValue}
                 onChange={(e) => setInnerValue(e.target.value)}
                 className="
-                    w-full 
-                    px-3 
-                    py-2 
-                    text-sm 
                     bg-white 
-                    border 
-                    border-slate-300 
-                    rounded-md 
                     shadow-sm 
-                    placeholder-slate-400 
-                    focus:outline-none 
-                    focus:border-slate-900 
-                    focus:ring-1 
-                    focus:ring-slate-900 
-                    transition-all
-                    font-medium
+                    transition-all 
+                    focus-visible:ring-1 
+                    focus-visible:ring-slate-900 
+                    focus-visible:border-slate-900
                 "
             />
         </div>

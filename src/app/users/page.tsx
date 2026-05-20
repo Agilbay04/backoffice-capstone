@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { UserListQuery } from './_types/user-list-query';
 import { USER_QUERY_DEFAULTS } from './_const/user-query-defaults';
 import SearchInput from '../_components/SearchInput';
@@ -7,10 +7,13 @@ import { MOCK_USERS } from './_mocks/users';
 import { MOCK_ROLES } from './_mocks/roles';
 import { STATUS_OPTIONS } from './_mocks/statuses';
 import UserTable from './_components/UserTable';
+import { Spinner } from '../_components/ui/spinner';
 import type { DropdownOption } from '../../types/domain';
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<UserListQuery>(USER_QUERY_DEFAULTS);
+
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleFilterChange = useCallback((key: keyof UserListQuery, value: string | number) => {
     setFilters((prev) => ({
@@ -19,6 +22,16 @@ export default function UsersPage() {
       page: 1
     }));
   }, []);
+
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const filteredUsers = useMemo(() => {
     return MOCK_USERS?.filter((user) => {
@@ -84,10 +97,19 @@ export default function UsersPage() {
         </div>
       </section>
 
-      {/* TABEL USERS */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <UserTable data={filteredUsers} />
-      </div>
+      {/* CONDITIONAL CONTENT LOADING */}
+      {isLoading ? (
+        <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
+          <Spinner className="text-slate-900" />
+          <span className="text-xs font-medium text-slate-400 animate-pulse">
+            Fetching users data...
+          </span>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+          <UserTable data={filteredUsers} />
+        </div>
+      )}
     </main>
   );
 }
