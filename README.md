@@ -41,3 +41,52 @@ Hari kedua mempelajari konsep dasar React, bagaimana browser merender elemen, im
   - Menggunakan `useMemo` untuk melakukan *caching* pada hasil `.filter()` data user.
   - Menggunakan `useCallback` untuk *caching* memori dari fungsi *handler* perubahan filter di parent component.
   - Menerapkan `React.memo` pada komponen `<StatusBadge />`, `<SearchInput />`, `<DropdownInput />`, dan `<UserTable />` untuk mencegah render ulang yang tidak diperlukan jika tidak terdapat perubahan *props*.
+
+### 19 Mei, Selasa: Tailwind, shadcn/ui, Routing, dan App Shell
+
+Hari ketiga melakukan migrasi layout dari vanilla CSS ke Tailwind utility classes, integrasi shadcn/ui sebagai sumber komponen yang bisa diedit, dan implementasi client-side routing menggunakan React Router untuk memisahkan tiap halaman dalam SPA.
+
+**Aktivitas:**
+
+- **Tailwind CSS Integration**: Install dan konfigurasi Tailwind CSS v4 melalui `@tailwindcss/vite` plugin. Menggunakan utility classes untuk layout (`flex`, `grid`), spacing (`p-*`, `m-*`, `gap-*`), color (`bg-slate-*`, `text-slate-*`, `border-slate-*`), dan responsive utilities. Menghapus vanilla CSS manual sebelumnya dan menggantinya dengan konfigurasi tematik di `src/index.css`.
+
+- **shadcn/ui Setup**: Inisialisasi shadcn/ui melalui `components.json` dengan style `radix-nova`. Menambahkan primitives UI yang bisa diedit langsung ke codebase:
+  - `<Button>` — dengan variants default, outline, secondary, ghost, destructive, link
+  - `<Input>` — form input dengan styling konsisten
+  - `<Select>` — dropdown selection
+  - `<Badge>` — status indicator
+  - `<Table>`, `<TableHeader>`, `<TableBody>`, `<TableRow>`, `<TableCell>` — semantic table primitives
+  - `<Spinner>` — loading indicator
+  - `<Label>` — form label dengan accessibility
+  - Primitives ditempatkan di `src/app/_components/ui/` dengan `@/` alias.
+
+- **Rebuild App Shell**: Migrasi layout aplikasi dari vanilla CSS Flexbox ke Tailwind utility classes. Layout split (`flex h-screen w-screen`), sidebar fixed width (`w-64 bg-slate-900`), topbar (`h-16 bg-white border-b shadow-sm`), dan main content area (`flex-1 p-6 overflow-y-auto`).
+
+- **React Router Setup**: Install `react-router-dom` v7. Menggunakan `createBrowserRouter` + `RouterProvider` (API modern v6.4+) di `src/main.tsx`. Router didefinisikan sebagai route objects array, bukan JSX-based `<BrowserRouter>`.
+
+- **Route Pages**: Membuat 7 page placeholder sesuai routes wajib:
+  - `/login` → `src/app/login/page.tsx`
+  - `/dashboard` → `src/app/dashboard/page.tsx`
+  - `/users` → `src/app/users/page.tsx` (sudah ada, di-integrasikan ke router)
+  - `/users/:id` → `src/app/users/[id]/page.tsx` (menggunakan `useParams`)
+  - `/requests` → `src/app/requests/page.tsx`
+  - `/requests/:id` → `src/app/requests/[id]/page.tsx`
+  - `/audit-logs` → `src/app/audit-logs/page.tsx`
+
+- **Layout Extraction**: Memisahkan app shell dari `App.tsx` menjadi dua layout component:
+  - `AppLayout` (`src/app/_components/AppLayout.tsx`) — sidebar, topbar, dan `<Outlet />` untuk konten halaman authenticated.
+  - `AuthLayout` (`src/app/_components/AuthLayout.tsx`) — layout minimal tanpa sidebar untuk halaman login.
+
+- **Nested Routes**: Menggunakan parent-child routing. Parent route `'/'` me-render `AppLayout`, child routes (dashboard, users, dll) di-render di dalam `<Outlet />`. Ini menggantikan pattern manual sebelumnya di mana semua konten di-render langsung di `App.tsx`.
+
+- **Active Navigation**: Mengganti `<a href>` dengan `<NavLink>` dari React Router. Menggunakan render props `isActive` untuk memberikan active styling (`bg-slate-700 text-white font-bold`) pada link sidebar yang sedang aktif.
+
+- **Navigation Data**: Mengekstrak data navigasi dari `MOCK_MENUS` (private ke module users) ke `src/common/consts/navigation.ts`. URL navigasi diubah dari hash anchor (`#users`) ke absolute path (`/users`) yang kompatibel dengan React Router.
+
+- **Error Pages**: Membuat halaman untuk error states:
+  - `NotFoundPage` (`src/app/not-found.tsx`) — halaman 404 untuk URL yang tidak dikenal, ditangani oleh wildcard route `path: '*'`.
+  - `ForbiddenPage` (`src/app/forbidden.tsx`) — halaman 403 untuk akses tanpa izin, sebagai persiapan auth flow.
+
+- **Root Redirect**: Route `/` (index) langsung redirect ke `/dashboard` menggunakan `<Navigate to="/dashboard" replace />`. `replace` memastikan tombol back tidak kembali ke root.
+
+- **App.tsx Cleanup**: `App.tsx` dikosongkan karena routing dan layout sudah dikelola oleh `main.tsx` + `AppLayout`/`AuthLayout`. Entry point aplikasi sekarang adalah `RouterProvider` di `main.tsx`.
