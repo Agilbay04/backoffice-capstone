@@ -90,3 +90,39 @@ Hari ketiga melakukan migrasi layout dari vanilla CSS ke Tailwind utility classe
 - **Root Redirect**: Route `/` (index) langsung redirect ke `/dashboard` menggunakan `<Navigate to="/dashboard" replace />`. `replace` memastikan tombol back tidak kembali ke root.
 
 - **App.tsx Cleanup**: `App.tsx` dikosongkan karena routing dan layout sudah dikelola oleh `main.tsx` + `AppLayout`/`AuthLayout`. Entry point aplikasi sekarang adalah `RouterProvider` di `main.tsx`.
+
+### 20 Mei, Rabu: Forms, Validation, dan Auth Flow
+
+Hari keempat implementasi form controlled dengan React Hook Form, validasi menggunakan Zod schema, dan auth flow lengkap (login, logout, route guard).
+
+**Aktivitas:**
+
+- **Install Dependensi Form & Validasi**: Menambahkan `react-hook-form`, `@hookform/resolvers`, dan `zod` ke package.json. React Hook Form untuk manajemen form tanpa re-render manual per field, `@hookform/resolvers` sebagai jembatan integrasi RHF-Zod, dan Zod sebagai schema validation + TypeScript type generator.
+
+- **Domain Types untuk Auth**: Menambahkan type `AuthRequest` (email + password) dan `AuthResponse` (id, name, email, role, status) di `src/types/domain.ts`. Menambahkan field `password` ke interface `User` untuk keperluan mock login.
+
+- **AuthContext + AuthProvider** (`src/app/login/_hooks/use-auth.tsx`): Membuat context untuk auth state global menggunakan `createContext`. Provider menyimpan `AuthResponse | null` sebagai state user (`null` = belum login). `login()` melakukan lookup ke `MOCK_USERS` dengan delay 800ms simulasi network. `logout()` mereset state ke `null`. Error throw jika `useAuth()` dipanggil di luar `AuthProvider`.
+
+- **Route Guard — AuthGuard** (`src/app/_components/AuthGuard.tsx`): Layout route component yang mengecek `isAuthenticated` dari `useAuth()`. Jika user belum login, redirect ke `/login` menggunakan `<Navigate to="/login" replace />`. Jika sudah login, render `<Outlet />` untuk melanjutkan ke halaman tujuan.
+
+- **Restruktur Route di main.tsx**: Membungkus semua route yang membutuhkan autentikasi (dashboard, users, requests, audit-logs) dalam parent route dengan `element: <AuthGuard />`. Route `/login` tetap di luar guard agar bisa diakses tanpa login. `AuthProvider` membungkus `RouterProvider` agar context tersedia di seluruh aplikasi.
+
+- **LoginForm** (`src/app/_components/LoginForm.tsx`): Form login menggunakan React Hook Form + Zod:
+  - Schema: `email` (z.string().email()), `password` (z.string().min(8))
+  - Type otomatis dari schema via `z.infer`
+  - `zodResolver` untuk integrasi RHF-Zod
+  - Field errors (email format, password length) muncul di bawah masing-masing input
+  - Submit error (kredensial salah) ditampilkan sebagai `root` error di atas form via `setError('root', ...)`
+  - Tombol submit disabled + spinner saat `isSubmitting`
+  - Sukses login → `navigate('/dashboard', { replace: true })`
+
+- **AppLayout — Integrasi useAuth**: Mengganti hardcoded `MOCK_USERS[0]` dengan `const { user, logout } = useAuth()`. Topbar menampilkan `user?.name` dan `user?.role?.toUpperCase()` dari context. Menambahkan tombol **Logout** yang memanggil `logout()` + `navigate('/login')`.
+
+- **UserForm** (`src/app/users/_components/UserForm.tsx`): Form reusable untuk create/edit user:
+  - Schema: `name` (min 1), `email` (valid format), `role` (enum admin/manager/operator), `status` (enum active/inactive)
+  - Mendukung mode `'create'` dan `'edit'` dengan `defaultValues` berbeda
+  - Field Select menggunakan pattern `setValue` + `shouldValidate: true` (karena shadcn Select tidak kompatibel dengan `register()`)
+  - Props interface: `mode`, `defaultValues?`, `onSubmit` (async return `{ success, error? }`), `onSuccess` (callback)
+  - Submit error handling via `setError('root', ...)` sama seperti LoginForm
+
+- **Dialog Create User di UsersPage**: Menambahkan state `isCreateOpen` + tombol "+ Add User" + Dialog dari shadcn/ui. UserForm di-render di dalam DialogContent. Submit sukses → dialog tertutup via `onSuccess={() => setIsCreateOpen(false)}`.
