@@ -1,4 +1,4 @@
-import type { UserListQuery } from "../_types/user-list-query";
+import type { UserListQuery } from "@/app/users/_types/user-list-query";
 
 export const USER_QUERY_DEFAULTS: UserListQuery = {
     search: "",

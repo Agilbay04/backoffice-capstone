@@ -14,8 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '../_components/ui/dialog';
-import type { DropdownOption } from '../../types/domain';
+} from '@/app/_components/ui/dialog';
+import type { DropdownOption } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 

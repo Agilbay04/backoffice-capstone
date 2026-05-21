@@ -1,4 +1,4 @@
-import type { Role } from "../../../types/domain";
+import type { Role } from "@/types/domain";
 
 export const MOCK_ROLES: Role[] = [
   { id: '1', name: 'admin' },

@@ -1,5 +1,5 @@
 import React from "react";
-import type { DropdownOption } from "../../types/domain";
+import type { DropdownOption } from "@/types/domain";
 import {
     Select,
     SelectContent,

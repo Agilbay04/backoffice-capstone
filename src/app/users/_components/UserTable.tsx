@@ -1,6 +1,6 @@
 import React from 'react';
-import StatusBadge from '../../_components/StatusBadge';
-import type { User } from '../../../types/domain';
+import StatusBadge from '@/app/_components/StatusBadge';
+import type { User } from '@/types/domain';
 import {
   Table,
   TableBody,

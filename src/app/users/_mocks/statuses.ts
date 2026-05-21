@@ -1,4 +1,4 @@
-import type { DropdownOption } from "../../../types/domain";
+import type { DropdownOption } from "@/types/domain";
 
 export const STATUS_OPTIONS: DropdownOption[] = [
   { key: 'active', value: 'active' },

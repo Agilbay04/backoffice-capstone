@@ -5,22 +5,22 @@ from "react-router-dom";
 
 import { AuthProvider } from "@/app/login/_hooks/use-auth";
 
-import AppLayout from "./app/_components/AppLayout";
-import AuthLayout from "./app/_components/AuthLayout";
+import AppLayout from "@/app/_components/AppLayout";
+import AuthLayout from "@/app/_components/AuthLayout";
 
-import LoginPage from "./app/login/page";
-import DashboardPage from "./app/dashboard/page";
-import UsersPage from "./app/users/page";
-import UserDetailPage from "./app/users/[id]/page";
-import RequestsPage from "./app/requests/page";
-import RequestDetailPage from "./app/requests/[id]/page";
-import AuditLogsPage from "./app/audit-logs/page";
+import LoginPage from "@/app/login/page";
+import DashboardPage from "@/app/dashboard/page";
+import UsersPage from "@/app/users/page";
+import UserDetailPage from "@/app/users/[id]/page";
+import RequestsPage from "@/app/requests/page";
+import RequestDetailPage from "@/app/requests/[id]/page";
+import AuditLogsPage from "@/app/audit-logs/page";
 
-import NotFoundPage from "./app/not-found";
-import ForbiddenPage from "./app/forbidden";
+import NotFoundPage from "@/app/not-found";
+import ForbiddenPage from "@/app/forbidden";
 
 import "./index.css";
-import AuthGuard from "./app/_components/AuthGuard";
+import AuthGuard from "@/app/_components/AuthGuard";
 
 const router = createBrowserRouter([
   // Standalone pages
