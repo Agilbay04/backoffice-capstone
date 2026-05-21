@@ -1,19 +1,30 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import type { UserListQuery } from './_types/user-list-query';
-import { USER_QUERY_DEFAULTS } from './_const/user-query-defaults';
-import SearchInput from '../_components/SearchInput';
-import DropdownInput from '../_components/DropdownInput';
-import { MOCK_USERS } from './_mocks/users';
-import { MOCK_ROLES } from './_mocks/roles';
-import { STATUS_OPTIONS } from './_mocks/statuses';
-import UserTable from './_components/UserTable';
-import { Spinner } from '../_components/ui/spinner';
+import type { UserListQuery } from '@/app/users/_types/user-list-query';
+import { USER_QUERY_DEFAULTS } from '@/app/users/_const/user-query-defaults';
+import SearchInput from '@/app/_components/SearchInput';
+import DropdownInput from '@/app/_components/DropdownInput';
+import { MOCK_USERS } from '@/app/users/_mocks/users';
+import { MOCK_ROLES } from '@/app/users/_mocks/roles';
+import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
+import UserTable from '@/app/users/_components/UserTable';
+import UserForm from '@/app/users/_components/UserForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '../_components/ui/dialog';
 import type { DropdownOption } from '../../types/domain';
+import { Button } from '@/app/_components/ui/button';
+import { Spinner } from '@/app/_components/ui/spinner';
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<UserListQuery>(USER_QUERY_DEFAULTS);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const handleFilterChange = useCallback((key: keyof UserListQuery, value: string | number) => {
     setFilters((prev) => ({
@@ -56,11 +67,22 @@ export default function UsersPage() {
     }) ?? [];
   }, [filters]);
 
+  const handleCreateUser = useCallback(async (data: any) => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    console.log('Create user:', data);
+    return { success: true };
+  }, []);
+
   return (
     <main className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Users Management</h1>
-        <p className="text-sm text-slate-500 mt-1">Manage user roles and permissions.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Users Management</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage user roles and permissions.</p>
+        </div>
+        <Button variant="slate" onClick={() => setIsCreateOpen(true)}>
+          + Add User
+        </Button>
       </div>
 
       {/* LOCAL STATE TRIGGERS */}
@@ -110,6 +132,23 @@ export default function UsersPage() {
           <UserTable data={filteredUsers} />
         </div>
       )}
+
+      {/* DIALOG CREATE USER */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Fill in the form below to create a new user.
+            </DialogDescription>
+          </DialogHeader>
+          <UserForm
+            mode="create"
+            onSubmit={handleCreateUser}
+            onSuccess={() => setIsCreateOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

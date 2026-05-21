@@ -1,6 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } 
+from "react-router-dom";
+
+import { AuthProvider } from "@/app/login/_hooks/use-auth";
 
 import AppLayout from "./app/_components/AppLayout";
 import AuthLayout from "./app/_components/AuthLayout";
@@ -17,45 +20,46 @@ import NotFoundPage from "./app/not-found";
 import ForbiddenPage from "./app/forbidden";
 
 import "./index.css";
+import AuthGuard from "./app/_components/AuthGuard";
 
 const router = createBrowserRouter([
   // Standalone pages
-  {
-    path: '/forbidden',
-    element: <ForbiddenPage />,
-  },
-  {
-    path: '*',
-    element: <NotFoundPage />,
-  },
+  { path: '/forbidden', element: <ForbiddenPage /> },
+  { path: '*', element: <NotFoundPage /> },
 
-  // Auth layout
+  // Auth pages
   {
     path: '/login',
     element: <AuthLayout />,
-    children: [
-      { index: true, element: <LoginPage /> },
-    ],
+    children: [{ index: true, element: <LoginPage /> }],
   },
 
-  // App layout — sidebar + topbar
+  // App pages — sidebar + topbar
   {
-    path: '/',
-    element: <AppLayout />,
+    element: <AuthGuard />,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
-      { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'users', element: <UsersPage /> },
-      { path: 'users/:id', element: <UserDetailPage /> },
-      { path: 'requests', element: <RequestsPage /> },
-      { path: 'requests/:id', element: <RequestDetailPage /> },
-      { path: 'audit-logs', element: <AuditLogsPage /> },
+      {
+        path: '/',
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { path: 'dashboard', element: <DashboardPage /> },
+          { path: 'users', element: <UsersPage /> },
+          { path: 'users/:id', element: <UserDetailPage /> },
+          { path: 'requests', element: <RequestsPage /> },
+          { path: 'requests/:id', element: <RequestDetailPage /> },
+          { path: 'audit-logs', element: <AuditLogsPage /> },
+        ],  
+      }
     ],
   },
+  
 ]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 );

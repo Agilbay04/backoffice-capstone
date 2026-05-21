@@ -7,6 +7,7 @@ export interface User {
     email: string;
     role: UserRole;
     status: UserStatus;
+    password: string;
     createdAt: string;
 }
 
@@ -25,6 +26,19 @@ export interface Menu {
 export interface DropdownOption {
     key: string;
     value: string;
+}
+
+export interface AuthRequest {
+    email: string;
+    password: string;
+}
+
+export interface AuthResponse {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    status: UserStatus;
 }
 
 export interface Request {

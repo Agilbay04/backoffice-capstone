@@ -1,10 +1,20 @@
-import { Outlet, NavLink } from "react-router-dom";
-import { NAV_ITEMS } from "@/common/consts/navigation";
-import { MOCK_USERS } from "@/app/users/_mocks/users";
+import { Outlet, NavLink, useNavigate } 
+from "react-router-dom";
 
-const USER_SIGNED_IN = MOCK_USERS[0];
+import { NAV_ITEMS } from "@/common/consts/navigation";
+import { useAuth } from "@/app/login/_hooks/use-auth";
+import { Button } from "@/app/_components/ui/button";
+
 
 export default function AppLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+  
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans">
       {/* SIDEBAR */}
@@ -32,11 +42,17 @@ export default function AppLayout() {
       </aside>
 
       {/* MAIN AREA */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+     <div className="flex-1 flex flex-col overflow-hidden">
         {/* TOPBAR */}
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-end shadow-sm">
-          <div className="text-sm text-slate-600">
-            Logged in as: <strong className="text-slate-900">{USER_SIGNED_IN?.name} ({USER_SIGNED_IN?.role?.toUpperCase()})</strong>
+        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm">
+          <div />
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-slate-600">
+              Logged in as: <strong className="text-slate-900">{user?.name} ({user?.role?.toUpperCase()})</strong>
+            </span>
+            <Button variant="outline" size="xs" onClick={handleLogout}>
+              Logout
+            </Button>
           </div>
         </header>
 
