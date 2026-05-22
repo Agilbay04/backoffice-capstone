@@ -2,6 +2,11 @@
 
 Projek dashboard backoffice yang dibangun menggunakan Vite, React, dan pnpm. Projek ini merupakan bagian dari kurikulum transisi Backend ke Fullstack.
 
+## Example Login Account
+
+- Username: `admin@example.com`
+- Password: `password123`
+
 ## Progres Harian
 
 ### 15 Mei, Jumat: Kickoff, Mental Model, dan Project Setup
