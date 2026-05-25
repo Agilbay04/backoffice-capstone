@@ -39,13 +39,13 @@ Hari kedua mempelajari konsep dasar React, bagaimana browser merender elemen, im
 - **Local State Filtering**: Menggunakan React `useState` untuk filter user berdasarkan pencarian, role, dan status, serta menerapkan model data `UserListQuery` yang sudah didefinisikan sebelumnya.
 - **Data Isolation**: Memisahkan mock data statis (`MOCK_USERS`) dan opsi menu ke dalam folder khusus `src/app/users/_mocks/` guna menjaga kerapian berkas halaman utama.
 - **Component Extraction**:
-  - Mengekstrak search input menjadi komponen `<SearchInput>`
-  - Mengekstrak dropdown input menjadi komponen generik `<DropdownInput />`
-  - Mengekstrak tabel User menjadi komponen privat `<UserTable />` khusus untuk modul `users`.
+  - Mengekstrak search input menjadi komponen `<SearchInput>` (`src/app/_components/search-input.tsx`)
+  - Mengekstrak dropdown input menjadi komponen generik `<DropdownInput />` (`src/app/_components/dropdown-input.tsx`)
+  - Mengekstrak tabel User menjadi komponen privat `<UserTable />` khusus untuk modul `users` (`src/app/users/_components/user-table.tsx`).
 - **Performance Optimization**:
   - Menggunakan `useMemo` untuk melakukan *caching* pada hasil `.filter()` data user.
   - Menggunakan `useCallback` untuk *caching* memori dari fungsi *handler* perubahan filter di parent component.
-  - Menerapkan `React.memo` pada komponen `<StatusBadge />`, `<SearchInput />`, `<DropdownInput />`, dan `<UserTable />` untuk mencegah render ulang yang tidak diperlukan jika tidak terdapat perubahan *props*.
+  - Menerapkan `React.memo` pada komponen `<StatusBadge />` (`src/app/_components/status-badge.tsx`), `<SearchInput />`, `<DropdownInput />`, dan `<UserTable />` untuk mencegah render ulang yang tidak diperlukan jika tidak terdapat perubahan *props*.
 
 ### 19 Mei, Selasa: Tailwind, shadcn/ui, Routing, dan App Shell
 
@@ -63,7 +63,10 @@ Hari ketiga melakukan migrasi layout dari vanilla CSS ke Tailwind utility classe
   - `<Table>`, `<TableHeader>`, `<TableBody>`, `<TableRow>`, `<TableCell>` — semantic table primitives
   - `<Spinner>` — loading indicator
   - `<Label>` — form label dengan accessibility
+  - `<Skeleton>` — placeholder loading untuk konten
+  - `<Dialog>`, `<DialogContent>`, `<DialogHeader>`, `<DialogTitle>`, `<DialogDescription>` — modal dialog
   - Primitives ditempatkan di `src/app/_components/ui/` dengan `@/` alias.
+  - `src/app/_components/ui/input.tsx` tetap sebagai primitive murni (styling saja). Logika form (label, error, forwardRef) dipisah ke `form-input.tsx`.
 
 - **Rebuild App Shell**: Migrasi layout aplikasi dari vanilla CSS Flexbox ke Tailwind utility classes. Layout split (`flex h-screen w-screen`), sidebar fixed width (`w-64 bg-slate-900`), topbar (`h-16 bg-white border-b shadow-sm`), dan main content area (`flex-1 p-6 overflow-y-auto`).
 
@@ -79,8 +82,8 @@ Hari ketiga melakukan migrasi layout dari vanilla CSS ke Tailwind utility classe
   - `/audit-logs` → `src/app/audit-logs/page.tsx`
 
 - **Layout Extraction**: Memisahkan app shell dari `App.tsx` menjadi dua layout component:
-  - `AppLayout` (`src/app/_components/AppLayout.tsx`) — sidebar, topbar, dan `<Outlet />` untuk konten halaman authenticated.
-  - `AuthLayout` (`src/app/_components/AuthLayout.tsx`) — layout minimal tanpa sidebar untuk halaman login.
+  - `AppLayout` (`src/app/_components/app-layout.tsx`) — sidebar, topbar, dan `<Outlet />` untuk konten halaman authenticated.
+  - `AuthLayout` (`src/app/_components/auth-layout.tsx`) — layout minimal tanpa sidebar untuk halaman login.
 
 - **Nested Routes**: Menggunakan parent-child routing. Parent route `'/'` me-render `AppLayout`, child routes (dashboard, users, dll) di-render di dalam `<Outlet />`. Ini menggantikan pattern manual sebelumnya di mana semua konten di-render langsung di `App.tsx`.
 
@@ -106,13 +109,13 @@ Hari keempat implementasi form controlled dengan React Hook Form, validasi mengg
 
 - **Domain Types untuk Auth**: Menambahkan type `AuthRequest` (email + password) dan `AuthResponse` (id, name, email, role, status) di `src/types/domain.ts`. Menambahkan field `password` ke interface `User` untuk keperluan mock login.
 
-- **AuthContext + AuthProvider** (`src/app/login/_hooks/use-auth.tsx`): Membuat context untuk auth state global menggunakan `createContext`. Provider menyimpan `AuthResponse | null` sebagai state user (`null` = belum login). `login()` melakukan lookup ke `MOCK_USERS` dengan delay 800ms simulasi network. `logout()` mereset state ke `null`. Error throw jika `useAuth()` dipanggil di luar `AuthProvider`.
+- **AuthContext + AuthProvider** (`src/app/auth/_hooks/use-auth.tsx`): Membuat context untuk auth state global menggunakan `createContext`. Provider menyimpan `AuthResponse | null` sebagai state user (`null` = belum login). `login()` melakukan lookup ke `MOCK_USERS` dengan delay 800ms simulasi network. `logout()` mereset state ke `null`. Error throw jika `useAuth()` dipanggil di luar `AuthProvider`.
 
-- **Route Guard — AuthGuard** (`src/app/_components/AuthGuard.tsx`): Layout route component yang mengecek `isAuthenticated` dari `useAuth()`. Jika user belum login, redirect ke `/login` menggunakan `<Navigate to="/login" replace />`. Jika sudah login, render `<Outlet />` untuk melanjutkan ke halaman tujuan.
+- **Route Guard — AuthGuard** (`src/app/_components/auth-guard.tsx`): Layout route component yang mengecek `isAuthenticated` dari `useAuth()`. Jika user belum login, redirect ke `/login` menggunakan `<Navigate to="/login" replace />`. Jika sudah login, render `<Outlet />` untuk melanjutkan ke halaman tujuan.
 
 - **Restruktur Route di main.tsx**: Membungkus semua route yang membutuhkan autentikasi (dashboard, users, requests, audit-logs) dalam parent route dengan `element: <AuthGuard />`. Route `/login` tetap di luar guard agar bisa diakses tanpa login. `AuthProvider` membungkus `RouterProvider` agar context tersedia di seluruh aplikasi.
 
-- **LoginForm** (`src/app/_components/LoginForm.tsx`): Form login menggunakan React Hook Form + Zod:
+- **LoginForm** (`src/app/auth/_components/login-form.tsx`): Form login menggunakan React Hook Form + Zod:
   - Schema: `email` (z.string().email()), `password` (z.string().min(8))
   - Type otomatis dari schema via `z.infer`
   - `zodResolver` untuk integrasi RHF-Zod
@@ -123,11 +126,15 @@ Hari keempat implementasi form controlled dengan React Hook Form, validasi mengg
 
 - **AppLayout — Integrasi useAuth**: Mengganti hardcoded `MOCK_USERS[0]` dengan `const { user, logout } = useAuth()`. Topbar menampilkan `user?.name` dan `user?.role?.toUpperCase()` dari context. Menambahkan tombol **Logout** yang memanggil `logout()` + `navigate('/login')`.
 
-- **UserForm** (`src/app/users/_components/UserForm.tsx`): Form reusable untuk create/edit user:
+- **UserForm** (`src/app/users/_components/user-form.tsx`): Form reusable untuk create/edit user:
   - Schema: `name` (min 1), `email` (valid format), `role` (enum admin/manager/operator), `status` (enum active/inactive)
   - Mendukung mode `'create'` dan `'edit'` dengan `defaultValues` berbeda
-  - Field Select menggunakan pattern `setValue` + `shouldValidate: true` (karena shadcn Select tidak kompatibel dengan `register()`)
+  - Field Select (Role, Status) menggunakan `<Controller />` dari react-hook-form karena shadcn Select tidak kompatibel dengan `register()`. Wrapping dengan Controller memastikan validasi ter-trigger, default value terisi, dan ref terhubung dengan benar.
   - Props interface: `mode`, `defaultValues?`, `onSubmit` (async return `{ success, error? }`), `onSuccess` (callback)
   - Submit error handling via `setError('root', ...)` sama seperti LoginForm
 
+- **FormInput** (`src/app/_components/ui/form-input.tsx`): Wrapper reusable untuk field input form. Menggunakan `React.forwardRef` agar kompatibel dengan `register()` dari react-hook-form. Props `label` untuk render label otomatis, `error` untuk pesan validasi + `aria-invalid`. Membungkus `Input` dari `ui/input.tsx` — sehingga logika form (label, error) terpisah dari styling primitive.
+
 - **Dialog Create User di UsersPage**: Menambahkan state `isCreateOpen` + tombol "+ Add User" + Dialog dari shadcn/ui. UserForm di-render di dalam DialogContent. Submit sukses → dialog tertutup via `onSuccess={() => setIsCreateOpen(false)}`.
+
+- **State Persistence via LocalStorage**: AuthProvider menyimpan data user ke `localStorage` dengan key `auth_user`. Inisialisasi menggunakan lazy initializer `useState(() => localStorage.getItem(...))`. Login → simpan, logout → hapus. Refresh browser tidak lagi redirect ke `/login`. Data password tidak ikut tersimpan (hanya AuthResponse tanpa field password).
