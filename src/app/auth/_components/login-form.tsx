@@ -5,8 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/app/auth/_hooks/use-auth";
 import { Button } from "@/app/_components/ui/button";
-import { Input } from "@/app/_components/ui/input";
-import { Label } from "@/app/_components/ui/label";
+import { FormInput } from "@/app/_components/ui/form-input";
 import { Spinner } from "@/app/_components/ui/spinner";
 
 const loginSchema = z.object({
@@ -57,35 +56,21 @@ export default function LoginForm() {
         </div>
       )}
 
-      {/* Field: Email */}
-      <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="admin@example.com"
-          {...register('email')}
-          aria-invalid={errors?.email ? 'true' : undefined}
-        />
-        {errors?.email && (
-          <p className="text-xs text-red-500">{errors?.email?.message}</p>
-        )}
-      </div>
+      <FormInput
+        label="Email"
+        type="email"
+        placeholder="admin@example.com"
+        error={errors?.email?.message}
+        {...register('email')}
+      />
 
-      {/* Field: Password */}
-      <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          {...register('password')}
-          aria-invalid={errors?.password ? 'true' : undefined}
-        />
-        {errors?.password && (
-          <p className="text-xs text-red-500">{errors?.password?.message}</p>
-        )}
-      </div>
+      <FormInput
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+        error={errors?.password?.message}
+        {...register('password')}
+      />
 
       {/* Submit Button */}
       <Button type="submit" className="w-full bg-slate-900" disabled={isSubmitting}>

@@ -15,8 +15,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const AUTH_KEY = "auth_user";
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<AuthResponse | null>(null);
+    const [user, setUser] = useState<AuthResponse | null>(() => {
+        const saved = localStorage.getItem(AUTH_KEY);
+        return saved ? JSON.parse(saved) as AuthResponse : null;
+    });
 
     const login = useCallback(async (authRequest: AuthRequest): Promise<{ 
         success: boolean; 
@@ -30,8 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         if (user) {
-            const { id, name, email, role, status }: AuthResponse = user;
-            setUser({ id, name, email, role, status });
+            const response: AuthResponse = { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status };
+            localStorage.setItem(AUTH_KEY, JSON.stringify(response));
+            setUser(response);
             return { success: true };
         } else {
             return { success: false, error: "Invalid email or password" };
@@ -39,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const logout = useCallback(() => {
+        localStorage.removeItem(AUTH_KEY);
         setUser(null);
     }, []);
 

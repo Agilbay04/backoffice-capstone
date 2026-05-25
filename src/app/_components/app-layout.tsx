@@ -16,7 +16,7 @@ export default function AppLayout() {
   };
   
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden font-sans">
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-white p-5 flex flex-col gap-5">
         <h2 className="text-xl font-bold tracking-wider text-center text-white">

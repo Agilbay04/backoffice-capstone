@@ -1,10 +1,9 @@
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { Button } from '@/app/_components/ui/button';
-import { Input } from '@/app/_components/ui/input';
-import { Label } from '@/app/_components/ui/label';
+import { FormInput } from '@/app/_components/ui/form-input';
 import {
   Select,
   SelectContent,
@@ -48,7 +47,7 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
     const {
         register,
         handleSubmit,
-        setValue,
+        control,
         setError,
         formState: { errors, isSubmitting },
     } = useForm<UserFormValues>({
@@ -80,54 +79,46 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
             </div>
         )}
 
-        {/* Name */}
-        <div className="space-y-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input
-                id="name"
-                placeholder="Full name"
-                {...register('name')}
-                aria-invalid={errors?.name ? 'true' : undefined}
-            />
-            {errors?.name && (
-                <p className="text-xs text-red-500">{errors?.name?.message}</p>
-            )}
-        </div>
+        <FormInput
+            label="Name"
+            placeholder="Full name"
+            error={errors?.name?.message}
+            {...register('name')}
+        />
 
-        {/* Email */}
-        <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input
-                id="email"
-                type="email"
-                placeholder="user@example.com"
-                {...register('email')}
-                aria-invalid={errors?.email ? 'true' : undefined}
-            />
-            {errors?.email && (
-                <p className="text-xs text-red-500">{errors?.email?.message}</p>
-            )}
-        </div>
+        <FormInput
+            label="Email"
+            type="email"
+            placeholder="user@example.com"
+            error={errors?.email?.message}
+            {...register('email')}
+        />
 
         <div className="flex items-center justify-between">
             {/* Role — Select */}
             <div className="space-y-1.5">
-                <Label>Role</Label>
-                <Select
-                    onValueChange={(value) => setValue('role', value as UserRole, { shouldValidate: true })}
-                    defaultValue={defaultValues?.role}
-                >
-                <SelectTrigger aria-invalid={errors?.role ? 'true' : undefined}>
-                    <SelectValue placeholder="Choose role" />
-                </SelectTrigger>
-                <SelectContent>
-                    {ROLE_OPTIONS.map((opt) => (
-                        <SelectItem key={opt?.value} value={opt?.value}>
-                            {opt?.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Role</label>
+                <Controller
+                    control={control}
+                    name="role"
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger
+                                aria-invalid={errors?.role ? "true" : undefined}
+                                ref={field.ref}
+                            >
+                                <SelectValue placeholder="Choose role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {ROLE_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
                 {errors?.role && (
                     <p className="text-xs text-red-500">{errors?.role?.message}</p>
                 )}
@@ -135,22 +126,28 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
 
             {/* Status — Select */}
             <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select
-                    onValueChange={(value) => setValue('status', value as UserStatus, { shouldValidate: true })}
-                    defaultValue={defaultValues?.status}
-                >
-                <SelectTrigger aria-invalid={errors?.status ? 'true' : undefined}>
-                    <SelectValue placeholder="Choose status" />
-                </SelectTrigger>
-                <SelectContent>
-                    {STATUS_OPTIONS.map((opt) => (
-                        <SelectItem key={opt?.value} value={opt?.value}>
-                            {opt?.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Status</label>
+                <Controller
+                    control={control}
+                    name="status"
+                    render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger
+                                aria-invalid={errors?.status ? "true" : undefined}
+                                ref={field.ref}
+                            >
+                                <SelectValue placeholder="Choose status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {STATUS_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
                 {errors?.status && (
                     <p className="text-xs text-red-500">{errors?.status?.message}</p>
                 )}
@@ -158,7 +155,7 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
         </div>
 
         {/* Submit */}
-        <Button variant="slate" type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full bg-slate-900" disabled={isSubmitting}>
             {isSubmitting ? (
                 <span className="flex items-center gap-2">
                     <Spinner /> Saving data...

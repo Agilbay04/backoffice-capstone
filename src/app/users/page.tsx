@@ -80,7 +80,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Users Management</h1>
           <p className="text-sm text-slate-500 mt-1">Manage user roles and permissions.</p>
         </div>
-        <Button variant="slate" onClick={() => setIsCreateOpen(true)}>
+        <Button className="bg-slate-900" onClick={() => setIsCreateOpen(true)}>
           + Add User
         </Button>
       </div>
