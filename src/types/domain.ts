@@ -45,7 +45,9 @@ export interface Request {
     id: string;
     title: string;
     status: 'pending' | 'approved' | 'rejected';
+    priority: 'low' | 'medium' | 'high' | 'critical';
     requestedBy: string;
+    assignee: string | null;
     createdAt: string;
 }
 
@@ -53,5 +55,7 @@ export interface AuditLog {
     id: string;
     actor: string;
     action: string;
+    target?: string;
     timestamp: string;
+    details?: string;
 }

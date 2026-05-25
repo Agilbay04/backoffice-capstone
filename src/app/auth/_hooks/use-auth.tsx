@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } 
 from "react";
 import type { AuthRequest, AuthResponse } from "@/types/domain";
-import { MOCK_USERS } from "@/app/users/_mocks/users";
+import { authApi } from "@/api/auth/auth";
+import { ApiClientError } from "@/api/client";
 
 interface AuthContextType {
     user: AuthResponse | null;
@@ -27,20 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         success: boolean; 
         error?: string 
     }> => {
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        const user = MOCK_USERS?.find(u => 
-            u?.email === authRequest?.email 
-            && u?.password === authRequest?.password
-        );
-
-        if (user) {
-            const response: AuthResponse = { id: user.id, name: user.name, email: user.email, role: user.role, status: user.status };
-            localStorage.setItem(AUTH_KEY, JSON.stringify(response));
-            setUser(response);
+        try {
+            const response = await authApi.login(authRequest);
+            localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
+            setUser(response.data);
             return { success: true };
-        } else {
-            return { success: false, error: "Invalid email or password" };
+        } catch (error) {
+            if (error instanceof ApiClientError && error?.status === 401) {
+                return { success: false, error: error?.message };
+            }
+            return { success: false, error: 'An unexpected error occurred. Please try again.' };
         }
     }, []);
 

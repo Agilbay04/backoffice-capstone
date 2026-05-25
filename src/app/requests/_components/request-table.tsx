@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import StatusBadge from '@/app/_components/status-badge';
-import type { User } from '@/types/domain';
+import RequestStatusBadge from '@/app/requests/_components/request-status-badge';
 import {
   Table,
   TableBody,
@@ -10,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/app/_components/ui/table';
+import { Badge } from '@/app/_components/ui/badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import {
@@ -20,35 +20,31 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/app/_components/ui/dialog';
-import { usersApi } from '@/api/users/users';
-import { ApiClientError } from '@/api/client';
+import type { Request } from '@/types/domain';
 
-interface UserTableProps {
-  data: User[];
-  onDelete: () => void;
+interface RequestTableProps {
+  data: Request[];
+  onDelete: (id: string) => Promise<void>;
 }
 
-function UserTable({ data, onDelete }: UserTableProps) {
+const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' | 'outline'> = {
+    critical: 'destructive',
+    high: 'default',
+    medium: 'secondary',
+    low: 'outline',
+};
+
+function RequestTable({ data, onDelete }: RequestTableProps) {
     const navigate = useNavigate();
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const handleDelete = async () => {
         if (!deleteId) return;
         setIsDeleting(true);
-        setDeleteError(null);
-
         try {
-            await usersApi.delete(deleteId);
+            await onDelete(deleteId);
             setDeleteId(null);
-            onDelete();
-        } catch (err) {
-            if (err instanceof ApiClientError) {
-                setDeleteError(err.message);
-            } else {
-                setDeleteError('Failed to delete user.');
-            }
         } finally {
             setIsDeleting(false);
         }
@@ -60,47 +56,60 @@ function UserTable({ data, onDelete }: UserTableProps) {
                 <Table>
                     <TableHeader className="bg-slate-50">
                         <TableRow>
-                            <TableHead className="w-[20%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Name</TableHead>
-                            <TableHead className="w-[28%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Email</TableHead>
-                            <TableHead className="w-[15%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Role</TableHead>
-                            <TableHead className="w-[15%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
-                            <TableHead className="w-[22%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Actions</TableHead>
+                            <TableHead className="w-[20%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Title</TableHead>
+                            <TableHead className="w-[12%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
+                            <TableHead className="w-[10%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Priority</TableHead>
+                            <TableHead className="w-[15%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Requested By</TableHead>
+                            <TableHead className="w-[13%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Assignee</TableHead>
+                            <TableHead className="w-[12%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Created At</TableHead>
+                            <TableHead className="w-[18%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {data?.length > 0 ? (
-                            data?.map((user) => (
-                                <TableRow key={user?.id} className="hover:bg-slate-50/70 transition-colors">
+                            data?.map((request) => (
+                                <TableRow key={request?.id} className="hover:bg-slate-50/70 transition-colors">
                                     <TableCell className="px-6 py-4 text-sm font-medium text-slate-900 whitespace-nowrap">
                                         <button
                                             className="hover:underline text-left"
-                                            onClick={() => navigate(`/users/${user?.id}`)}
+                                            onClick={() => navigate(`/requests/${request?.id}`)}
                                         >
-                                            {user?.name}
+                                            {request?.title}
                                         </button>
                                     </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                                        {user?.email}
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-slate-600 font-mono tracking-wide">
-                                        {user?.role?.toUpperCase()}
+                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
+                                        <RequestStatusBadge status={request?.status} />
                                     </TableCell>
                                     <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
-                                        <StatusBadge status={user?.status} />
+                                        <Badge
+                                            variant={PRIORITY_VARIANT[request?.priority] ?? 'secondary'}
+                                            className="capitalize px-2.5 py-0.5 tracking-wide font-semibold rounded-full"
+                                        >
+                                            {request?.priority}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                                        {request?.requestedBy}
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                                        {request?.assignee ?? '—'}
+                                    </TableCell>
+                                    <TableCell className="px-6 py-4 text-sm text-slate-400 whitespace-nowrap">
+                                        {new Date(request?.createdAt).toLocaleDateString()}
                                     </TableCell>
                                     <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
                                         <div className="flex items-center gap-2">
                                             <Button
                                                 variant="outline"
                                                 size="xs"
-                                                onClick={() => navigate(`/users/${user?.id}`)}
+                                                onClick={() => navigate(`/requests/${request?.id}`)}
                                             >
                                                 Edit
                                             </Button>
                                             <Button
                                                 variant="destructive"
                                                 size="xs"
-                                                onClick={() => setDeleteId(user?.id)}
+                                                onClick={() => setDeleteId(request?.id)}
                                             >
                                                 Delete
                                             </Button>
@@ -110,8 +119,8 @@ function UserTable({ data, onDelete }: UserTableProps) {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-32 text-center text-sm font-medium text-slate-400">
-                                    No users found.
+                                <TableCell colSpan={7} className="h-32 text-center text-sm font-medium text-slate-400">
+                                    No requests found.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -122,16 +131,9 @@ function UserTable({ data, onDelete }: UserTableProps) {
             <Dialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Delete User</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this user? This action cannot be undone.
-                        </DialogDescription>
+                        <DialogTitle>Delete Request</DialogTitle>
+                        <DialogDescription>Are you sure? This action cannot be undone.</DialogDescription>
                     </DialogHeader>
-                    {deleteError && (
-                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {deleteError}
-                        </div>
-                    )}
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>
                             Cancel
@@ -148,4 +150,4 @@ function UserTable({ data, onDelete }: UserTableProps) {
     );
 }
 
-export default React.memo(UserTable);
+export default React.memo(RequestTable);

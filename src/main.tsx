@@ -15,6 +15,7 @@ import UserDetailPage from "@/app/users/[id]/page";
 import RequestsPage from "@/app/requests/page";
 import RequestDetailPage from "@/app/requests/[id]/page";
 import AuditLogsPage from "@/app/audit-logs/page";
+import AuditLogDetailPage from "@/app/audit-logs/[id]/page";
 
 import NotFoundPage from "@/app/not-found";
 import ForbiddenPage from "@/app/forbidden";
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
           { path: 'requests', element: <RequestsPage /> },
           { path: 'requests/:id', element: <RequestDetailPage /> },
           { path: 'audit-logs', element: <AuditLogsPage /> },
+          { path: 'audit-logs/:id', element: <AuditLogDetailPage /> },
         ],  
       }
     ],
@@ -56,10 +58,21 @@ const router = createBrowserRouter([
   
 ]);
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  </StrictMode>,
-);
+async function startApp() {
+  if (import.meta.env.DEV) {
+    const { worker } = await import('./api/mocks/browser');
+    await worker.start({
+      onUnhandledRequest: 'bypass',
+    });
+  }
+
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </StrictMode>,
+  );
+}
+
+startApp();

@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { UserListQuery } from '@/app/users/_types/user-list-query';
 import { USER_QUERY_DEFAULTS } from '@/app/users/_const/user-query-defaults';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
-import { MOCK_USERS } from '@/app/users/_mocks/users';
+import { usersApi } from '@/api/users/users';
 import { MOCK_ROLES } from '@/app/users/_mocks/roles';
 import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
 import UserTable from '@/app/users/_components/user-table';
@@ -15,14 +15,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/app/_components/ui/dialog';
-import type { DropdownOption } from '@/types/domain';
+import type { DropdownOption, User } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
+import { ApiClientError } from '@/api/client';
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<UserListQuery>(USER_QUERY_DEFAULTS);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -35,42 +38,57 @@ export default function UsersPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) return;
+    let cancelled = false;
 
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 400);
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    return () => clearTimeout(timer);
-  }, [isLoading]);
+      try {
+        const response = await usersApi.list({
+          search: filters.search,
+          role: filters.role,
+          status: filters.status,
+          page: filters.page,
+          pageSize: filters.pageSize,
+        });
 
-  const filteredUsers = useMemo(() => {
-    return MOCK_USERS?.filter((user) => {
-      if (!user) return false;
+                if (!cancelled) {
+                    setUsers(response.items);
+                }
+      } catch (err) {
+        if (!cancelled) {
+          if (err instanceof ApiClientError) {
+            setError(err.message);
+          } else {
+            setError('Failed to load users. Please try again.');
+          }
+                    setUsers([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-      const searchCriteria = filters?.search?.toLowerCase() ?? "";
+    fetchUsers();
 
-      const matchesName = user?.name?.toLowerCase()?.includes(searchCriteria) ?? false;
-      const matchesEmail = user?.email?.toLowerCase()?.includes(searchCriteria) ?? false;
-
-      const searchMatch = searchCriteria ? matchesName || matchesEmail : true;
-      
-      const roleMatch = filters?.role && filters?.role !== 'all' 
-        ? user?.role === filters?.role 
-        : true;
-
-      const statusMatch = filters?.status && filters?.status !== 'all' 
-        ? user?.status === filters?.status 
-        : true;
-
-      return searchMatch && roleMatch && statusMatch;
-    }) ?? [];
+    return () => {
+      cancelled = true;
+    };
   }, [filters]);
 
-  const handleCreateUser = useCallback(async (data: unknown) => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    console.log('Create user:', data);
-    return { success: true };
+  const handleCreateUser = useCallback(async (data: Partial<User>) => {
+    try {
+      await usersApi.create(data);
+      return { success: true };
+    } catch (err) {
+      if (err instanceof ApiClientError) {
+        return { success: false, error: err.message };
+      }
+      return { success: false, error: 'Failed to create user.' };
+    }
   }, []);
 
   return (
@@ -85,41 +103,36 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      {/* LOCAL STATE TRIGGERS */}
       <section className="flex items-end gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-        {/* Input Search */}
         <div className="flex-1">
           <SearchInput
             label="Search"
-            value={filters?.search ?? ""}
+            value={filters?.search ?? ''}
             onChange={(val) => handleFilterChange('search', val)}
             placeholder="Search by name or email..."
             style={{ width: '100%' }}
           />
         </div>
 
-        {/* Dropdown Role */}
         <div className="w-48">
           <DropdownInput
             label="Role"
             value={filters?.role}
-            options={RoleOptions()} 
-            onChange={(val) => handleFilterChange('role', val)} 
+            options={RoleOptions()}
+            onChange={(val) => handleFilterChange('role', val)}
           />
         </div>
 
-        {/* Dropdown Status */}
         <div className="w-48">
           <DropdownInput
             label="Status"
             value={filters?.status}
-            options={STATUS_OPTIONS} 
-            onChange={(val) => handleFilterChange('status', val)} 
+            options={STATUS_OPTIONS}
+            onChange={(val) => handleFilterChange('status', val)}
           />
         </div>
       </section>
 
-      {/* CONDITIONAL CONTENT LOADING */}
       {isLoading ? (
         <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
           <Spinner className="text-slate-900" />
@@ -127,13 +140,23 @@ export default function UsersPage() {
             Fetching users data...
           </span>
         </div>
+      ) : error ? (
+        <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
+          <span className="text-sm font-medium text-red-600">{error}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilters((prev) => ({ ...prev }))}
+          >
+            Retry
+          </Button>
+        </div>
       ) : (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <UserTable data={filteredUsers} />
+          <UserTable data={users} onDelete={() => setFilters((prev) => ({ ...prev }))} />
         </div>
       )}
 
-      {/* DIALOG CREATE USER */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -145,7 +168,10 @@ export default function UsersPage() {
           <UserForm
             mode="create"
             onSubmit={handleCreateUser}
-            onSuccess={() => setIsCreateOpen(false)}
+            onSuccess={() => {
+              setIsCreateOpen(false);
+              setFilters((prev) => ({ ...prev }));
+            }}
           />
         </DialogContent>
       </Dialog>
