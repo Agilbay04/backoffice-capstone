@@ -6,8 +6,8 @@ import DropdownInput from '@/app/_components/dropdown-input';
 import { MOCK_USERS } from '@/app/users/_mocks/users';
 import { MOCK_ROLES } from '@/app/users/_mocks/roles';
 import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
-import UserTable from '@/app/users/_components/UserTable';
-import UserForm from '@/app/users/_components/UserForm';
+import UserTable from '@/app/users/_components/user-table';
+import UserForm from '@/app/users/_components/user-form';
 import {
   Dialog,
   DialogContent,
