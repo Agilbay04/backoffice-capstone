@@ -138,3 +138,38 @@ Hari keempat implementasi form controlled dengan React Hook Form, validasi mengg
 - **Dialog Create User di UsersPage**: Menambahkan state `isCreateOpen` + tombol "+ Add User" + Dialog dari shadcn/ui. UserForm di-render di dalam DialogContent. Submit sukses → dialog tertutup via `onSuccess={() => setIsCreateOpen(false)}`.
 
 - **State Persistence via LocalStorage**: AuthProvider menyimpan data user ke `localStorage` dengan key `auth_user`. Inisialisasi menggunakan lazy initializer `useState(() => localStorage.getItem(...))`. Login → simpan, logout → hapus. Refresh browser tidak lagi redirect ke `/login`. Data password tidak ikut tersimpan (hanya AuthResponse tanpa field password).
+
+### 21 Mei, Kamis: Mock API, API Client, dan Error States
+
+Hari kelima implementasi MSW (Mock Service Worker) sebagai lapisan API mock, API client wrapper, dan seeded data.
+
+**Aktivitas:**
+
+- **MSW Setup**: Install `msw` v2, generate service worker dengan `npx msw init public/ --save`. Worker di-start secara dinamis di `src/main.tsx` via dynamic import hanya saat `import.meta.env.DEV`. Handler ditempatkan di `src/api/mocks/handlers/{domain}.ts` — path MSW handler harus sama persis dengan endpoint API (`/api/...`).
+
+- **Seeded Data** (`src/api/mocks/data/`): Membuat data awal untuk tiap domain — 6 users (admin, manager, operator, plus beberapa dummy), 5 requests dengan variasi status (pending, approved, rejected) dan priority (low, medium, high), serta 10 audit logs mencakup berbagai event login, create user, update request, dan delete user.
+
+- **API Client** (`src/api/client.ts`): Fetch wrapper dengan base URL dari env `VITE_API_BASE_URL`, error handling via `ApiClientError` class (status code, message, optional code), parsing response JSON otomatis, header `Content-Type: application/json`. Base URL fallback ke string kosong (`''`) untuk development — MSW hanya intercept path absolut (`/api/users`), bukan URL penuh.
+
+- **API Endpoint Functions** (`src/api/{domain}/{domain}.ts`): Fungsi API dipisahkan dari UI modules. Untuk setiap domain dibuat fungsi `list(params?)` dan `getById(id)`, ditambah `create()`, `update()`, `patch()`, `delete()` untuk yang membutuhkan mutation. Semua fungsi mengembalikan `Promise` response.
+
+- **MSW Handlers**: Handler untuk 4 domain ditulis dengan MSW v2 syntax (`http.get`, `http.post`, dll):
+  - `auth.ts` — login (cocokkan email + password dari seeded data, return token + user), me (return current user dari header Authorization), logout.
+  - `users.ts` — list (filter by search, role, status, pagination), get by id, create, update (PUT), delete. Awalnya handler DELETE belum ada (menyebabkan 404 saat delete user) — ditambahkan kemudian.
+  - `requests.ts` — list (filter by search, status, priority), get by id, create, update, delete, update status.
+  - `audit-logs.ts` — list (filter by search actor/action), get by id. Bersifat read-only.
+  - Semua handler menyertakan `await delay(400)` untuk realistic network latency.
+  - Error scenarios di-trigger via query param `?__error=401|403|500|empty`.
+
+- **Response Format Untuk Mock API** (`src/api/mocks/response.ts` + `src/api/types.ts`):
+  - Response pagination: `{ status_code, message, items[], meta: { total_page, total, page, per_size }, success, version }`
+  - Response single: `{ status_code, message, data, success, version }`
+  - Helper functions: `paginated()`, `single()`, `created()`, `updated()`, `deleted()`, `errorResponse()`.
+  - Frontend disesuaikan: list endpoints baca `response.items`, single endpoints baca `response.data`.
+
+- **Login via Mock API**: `use-auth.tsx` diubah dari `MOCK_USERS.find()` langsung menjadi `authApi.login()`. Response dibaca dari `response.data`. Validasi kredensial sekarang dilakukan di MSW handler, bukan di UI code.
+
+- **CRUD**:
+  - **Users**: List dengan search/role/status filter, detail page (`/users/:id`) dengan edit dialog dan delete button, create user via dialog, action column di tabel dengan confirm delete dialog.
+  - **Requests**: List dengan single search (title/requester/assignee) + status/priority dropdown, detail page (`/requests/:id`) dengan edit dialog (title, priority, requestedBy, assignee), status update, delete. Create request via dialog.
+  - **Audit Logs**: List dengan single search (actor/action), detail page (`/audit-logs/:id`). Read-only — create functionality dihapus karena log bersifat immutable.
