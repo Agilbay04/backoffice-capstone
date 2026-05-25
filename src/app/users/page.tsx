@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import type { UserListQuery } from '@/app/users/_types/user-list-query';
 import { USER_QUERY_DEFAULTS } from '@/app/users/_const/user-query-defaults';
-import SearchInput from '@/app/_components/SearchInput';
-import DropdownInput from '@/app/_components/DropdownInput';
+import SearchInput from '@/app/_components/search-input';
+import DropdownInput from '@/app/_components/dropdown-input';
 import { MOCK_USERS } from '@/app/users/_mocks/users';
 import { MOCK_ROLES } from '@/app/users/_mocks/roles';
 import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
@@ -67,7 +67,7 @@ export default function UsersPage() {
     }) ?? [];
   }, [filters]);
 
-  const handleCreateUser = useCallback(async (data: any) => {
+  const handleCreateUser = useCallback(async (data: unknown) => {
     await new Promise((resolve) => setTimeout(resolve, 600));
     console.log('Create user:', data);
     return { success: true };

@@ -3,12 +3,12 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Navigate } 
 from "react-router-dom";
 
-import { AuthProvider } from "@/app/login/_hooks/use-auth";
+import { AuthProvider } from "@/app/auth/_hooks/use-auth";
 
-import AppLayout from "@/app/_components/AppLayout";
-import AuthLayout from "@/app/_components/AuthLayout";
+import AppLayout from "@/app/_components/app-layout";
+import AuthLayout from "@/app/auth/_components/auth-layout";
 
-import LoginPage from "@/app/login/page";
+import LoginPage from "@/app/auth/page";
 import DashboardPage from "@/app/dashboard/page";
 import UsersPage from "@/app/users/page";
 import UserDetailPage from "@/app/users/[id]/page";
@@ -20,7 +20,7 @@ import NotFoundPage from "@/app/not-found";
 import ForbiddenPage from "@/app/forbidden";
 
 import "./index.css";
-import AuthGuard from "@/app/_components/AuthGuard";
+import AuthGuard from "@/app/_components/auth-guard";
 
 const router = createBrowserRouter([
   // Standalone pages

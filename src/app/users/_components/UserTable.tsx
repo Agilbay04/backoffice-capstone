@@ -1,5 +1,5 @@
 import React from 'react';
-import StatusBadge from '@/app/_components/StatusBadge';
+import StatusBadge from '@/app/_components/status-badge';
 import type { User } from '@/types/domain';
 import {
   Table,

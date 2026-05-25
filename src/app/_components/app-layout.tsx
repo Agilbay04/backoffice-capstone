@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate }
 from "react-router-dom";
 
 import { NAV_ITEMS } from "@/common/consts/navigation";
-import { useAuth } from "@/app/login/_hooks/use-auth";
+import { useAuth } from "@/app/auth/_hooks/use-auth";
 import { Button } from "@/app/_components/ui/button";
 
 
