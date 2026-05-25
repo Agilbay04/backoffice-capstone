@@ -53,9 +53,9 @@ export default function UsersPage() {
           pageSize: filters.pageSize,
         });
 
-                if (!cancelled) {
-                    setUsers(response.items);
-                }
+        if (!cancelled) {
+          setUsers(response.items);
+        }
       } catch (err) {
         if (!cancelled) {
           if (err instanceof ApiClientError) {
@@ -63,7 +63,8 @@ export default function UsersPage() {
           } else {
             setError('Failed to load users. Please try again.');
           }
-                    setUsers([]);
+          
+          setUsers([]);
         }
       } finally {
         if (!cancelled) {

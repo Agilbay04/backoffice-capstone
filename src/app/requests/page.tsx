@@ -134,7 +134,7 @@ export default function RequestsPage() {
             </div>
 
             <section className="flex flex-wrap items-end gap-4 p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-50">
                     <SearchInput
                         label="Search"
                         value={filters?.search ?? ''}
