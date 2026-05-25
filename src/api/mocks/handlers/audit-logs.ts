@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { MOCK_AUDIT_LOGS } from '../data/audit-logs';
-import { paginated, single, errorResponse } from '@/api/mocks/response';
+import { paginated, apiResponse } from '@/api/mocks/response';
 
 export const auditLogsHandlers = [
   http.get('/api/audit-logs', async ({ request }) => {
@@ -8,13 +8,13 @@ export const auditLogsHandlers = [
 
     const errorScenario = url.searchParams.get('__error');
     if (errorScenario === '401') {
-      return HttpResponse.json(errorResponse(401, 'Session expired', 'AUTH_EXPIRED'), { status: 401 });
+      return HttpResponse.json(apiResponse('Session expired', { status_code: 401, code: 'AUTH_EXPIRED', success: false }), { status: 401 });
     }
     if (errorScenario === '403') {
-      return HttpResponse.json(errorResponse(403, 'Forbidden', 'FORBIDDEN'), { status: 403 });
+      return HttpResponse.json(apiResponse('Forbidden', { status_code: 403, code: 'FORBIDDEN', success: false }), { status: 403 });
     }
     if (errorScenario === '500') {
-      return HttpResponse.json(errorResponse(500, 'Server error', 'SERVER_ERROR'), { status: 500 });
+      return HttpResponse.json(apiResponse('Server error', { status_code: 500, code: 'SERVER_ERROR', success: false }), { status: 500 });
     }
     if (errorScenario === 'empty') {
       return HttpResponse.json(paginated([], 0, 1, 10));
@@ -40,8 +40,8 @@ export const auditLogsHandlers = [
     await delay(300);
     const log = MOCK_AUDIT_LOGS.find((l) => l.id === params.id);
     if (!log) {
-      return HttpResponse.json(errorResponse(404, 'Audit log not found', 'NOT_FOUND'), { status: 404 });
+      return HttpResponse.json(apiResponse('Audit log not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
     }
-    return HttpResponse.json(single(log, 'Success get audit log.'));
+    return HttpResponse.json(apiResponse('Success get audit log.', { data: log }));
   }),
 ];

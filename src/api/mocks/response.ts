@@ -16,51 +16,19 @@ export function paginated<T>(items: T[], total: number, page: number, pageSize: 
     };
 }
 
-export function single<T>(data: T, message = 'Success get data.') {
+export function apiResponse<T>(message: string, options?: {
+    status_code?: number;
+    data?: T;
+    code?: string;
+    success?: boolean;
+}) {
+    const { status_code = 200, data, code, success = true } = options ?? {};
     return {
-        status_code: 200,
+        status_code,
         message,
-        data,
-        success: true,
-        version: VERSION,
-    };
-}
-
-export function created<T>(data: T) {
-    return {
-        status_code: 201,
-        message: 'Success create data.',
-        data,
-        success: true,
-        version: VERSION,
-    };
-}
-
-export function updated<T>(data: T) {
-    return {
-        status_code: 200,
-        message: 'Success update data.',
-        data,
-        success: true,
-        version: VERSION,
-    };
-}
-
-export function deleted() {
-    return {
-        status_code: 200,
-        message: 'Success delete data.',
-        success: true,
-        version: VERSION,
-    };
-}
-
-export function errorResponse(status: number, message: string, code?: string) {
-    return {
-        status_code: status,
-        message,
-        code,
-        success: false,
+        ...(data !== undefined && { data }),
+        ...(code !== undefined && { code }),
+        success,
         version: VERSION,
     };
 }
