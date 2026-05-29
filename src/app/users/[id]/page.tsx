@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { usersApi } from '@/api/users/users';
+import { useUser } from '@/app/users/_hooks/use-user';
+import { useUpdateUser } from '@/app/users/_hooks/use-update-user';
+import { useDeleteUser } from '@/app/users/_hooks/use-delete-user';
 import StatusBadge from '@/app/_components/status-badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
@@ -19,61 +21,24 @@ export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<IUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useUser(id!);
+  const updateMutation = useUpdateUser();
+  const deleteMutation = useDeleteUser();
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!id) return;
-
-    let cancelled = false;
-
-    const fetchUser = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await usersApi.getById(id);
-        if (!cancelled) {
-          setUser(response.data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          if (err instanceof ApiClientError) {
-            setError(err.message);
-          } else {
-            setError('Failed to load user.');
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
-
-  const handleEdit = async (data: Partial<IUser>) => {
+  const handleEdit = async (formData: Partial<IUser>) => {
     if (!id) return { success: false };
     try {
-      const response = await usersApi.update(id, data);
-      setUser(response.data);
+      await updateMutation.mutateAsync({ id: id!, data: formData });
       return { success: true };
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        return { success: false, error: err.message };
-      }
-      return { success: false, error: 'Failed to update user.' };
+      return {
+        success: false,
+        error: err instanceof ApiClientError ? err.message : 'Failed to update user.',
+      };
     }
   };
 
@@ -83,14 +48,12 @@ export default function UserDetailPage() {
     setDeleteError(null);
 
     try {
-      await usersApi.delete(id);
+      await deleteMutation.mutateAsync(id);
       navigate('/users', { replace: true });
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        setDeleteError(err.message);
-      } else {
-        setDeleteError('Failed to delete user.');
-      }
+      setDeleteError(
+        err instanceof ApiClientError ? err.message : 'Failed to delete user.'
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -107,11 +70,13 @@ export default function UserDetailPage() {
     );
   }
 
-  if (error || !user) {
+  if (error || !data?.data) {
     return (
       <main className="space-y-6">
         <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <span className="text-sm font-medium text-red-600">{error ?? 'User not found.'}</span>
+          <span className="text-sm font-medium text-red-600">
+            {error instanceof Error ? error?.message : 'User not found.'}
+          </span>
           <Button variant="outline" size="sm" onClick={() => navigate('/users')}>
             Back to Users
           </Button>
@@ -119,6 +84,8 @@ export default function UserDetailPage() {
       </main>
     );
   }
+
+  const user = data.data;
 
   return (
     <main className="space-y-6">

@@ -20,35 +20,24 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/app/_components/ui/dialog';
-import { usersApi } from '@/api/users/users';
-import { ApiClientError } from '@/api/client';
 
 interface UserTableProps {
   data: IUser[];
-  onDelete: () => void;
+  onDelete: (id: string) => Promise<void>;
 }
 
 function UserTable({ data, onDelete }: UserTableProps) {
     const navigate = useNavigate();
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const handleDelete = async () => {
         if (!deleteId) return;
         setIsDeleting(true);
-        setDeleteError(null);
 
         try {
-            await usersApi.delete(deleteId);
+            await onDelete(deleteId);
             setDeleteId(null);
-            onDelete();
-        } catch (err) {
-            if (err instanceof ApiClientError) {
-                setDeleteError(err.message);
-            } else {
-                setDeleteError('Failed to delete user.');
-            }
         } finally {
             setIsDeleting(false);
         }
@@ -127,11 +116,6 @@ function UserTable({ data, onDelete }: UserTableProps) {
                             Are you sure you want to delete this user? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    {deleteError && (
-                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {deleteError}
-                        </div>
-                    )}
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>
                             Cancel

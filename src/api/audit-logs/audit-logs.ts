@@ -1,6 +1,6 @@
 import { api } from '@/api/client';
 import type { IAuditLog } from '@/types/domain';
-import type { PaginatedResponse, SingleResponse } from '@/api/types';
+import type { IPaginatedResponse, ISingleResponse } from '@/api/types';
 
 interface AuditLogsListParams {
   search?: string;
@@ -15,8 +15,8 @@ export const auditLogsApi = {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.pageSize) searchParams.set('pageSize', String(params.pageSize));
     const qs = searchParams.toString();
-    return api.get<PaginatedResponse<IAuditLog>>(`/api/audit-logs${qs ? `?${qs}` : ''}`);
+    return api.get<IPaginatedResponse<IAuditLog>>(`/api/audit-logs${qs ? `?${qs}` : ''}`);
   },
   getById: (id: string) =>
-    api.get<SingleResponse<IAuditLog>>(`/api/audit-logs/${id}`),
+    api.get<ISingleResponse<IAuditLog>>(`/api/audit-logs/${id}`),
 };

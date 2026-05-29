@@ -1,4 +1,4 @@
-export interface PaginatedResponse<T> {
+export interface IPaginatedResponse<T> {
     status_code: number;
     message: string;
     items: T[];
@@ -12,7 +12,7 @@ export interface PaginatedResponse<T> {
     version: string;
 }
 
-export interface SingleResponse<T> {
+export interface ISingleResponse<T> {
     status_code: number;
     message: string;
     data: T;

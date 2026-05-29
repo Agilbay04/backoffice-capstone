@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Navigate } 
 from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AuthProvider } from "@/app/auth/_hooks/use-auth";
 
@@ -22,6 +23,17 @@ import ForbiddenPage from "@/app/forbidden";
 
 import "./index.css";
 import AuthGuard from "@/app/_components/auth-guard";
+
+// Tanstack Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: parseInt(import.meta.env.VITE_STALE_TIME) || 30_000,
+      retry: parseInt(import.meta.env.VITE_RETRY) || 1,
+      refetchOnWindowFocus: Boolean(import.meta.env.VITE_REFETCH_ON_WINDOW_FOCUS),
+    },
+  },
+});
 
 const router = createBrowserRouter([
   // Standalone pages
@@ -69,7 +81,9 @@ async function startApp() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
       </AuthProvider>
     </StrictMode>,
   );

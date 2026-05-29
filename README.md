@@ -173,3 +173,41 @@ Hari kelima implementasi MSW (Mock Service Worker) sebagai lapisan API mock, API
   - **Users**: List dengan search/role/status filter, detail page (`/users/:id`) dengan edit dialog dan delete button, create user via dialog, action column di tabel dengan confirm delete dialog.
   - **Requests**: List dengan single search (title/requester/assignee) + status/priority dropdown, detail page (`/requests/:id`) dengan edit dialog (title, priority, requestedBy, assignee), status update, delete. Create request via dialog.
   - **Audit Logs**: List dengan single search (actor/action), detail page (`/audit-logs/:id`). Read-only — create functionality dihapus karena log bersifat immutable.
+
+### 22 Mei, Jumat: TanStack Query Integration
+
+Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan pola `useState` + `useEffect` + fetch manual pada modul Users.
+
+**Aktivitas:**
+
+- **Install Dependensi**: Menambahkan `@tanstack/react-query` ke package.json.
+- **QueryClient Setup** (`src/main.tsx`): Membuat `QueryClient` dengan konfigurasi:
+  - `staleTime: 30_000` — data dianggap fresh selama 30 detik
+  - `retry: 1` — satu kali retry otomatis jika query gagal
+  - `refetchOnWindowFocus: false` — tidak refetch saat tab kembali aktif
+  - Client dibungkus dalam `<QueryClientProvider>` di root render tree
+- **Query Key Factory** (`src/api/query-keys.ts`): Membuat factory functions untuk query keys terstruktur per domain (`users`, `requests`, `auditLogs`) dengan hierarki `all`, `lists()`, `list(filters)`, `details()`, `detail(id)`.
+- **Query & Mutation Hooks** (`src/app/users/_hooks/`): Membuat 5 hooks untuk modul Users:
+  - `useUserList(filters)` — query dengan query key `queryKeys.users.list(filters)`, dependensi `[filters]`
+  - `useUser(id)` — query dengan query key `queryKeys.users.detail(id)`, enabled condition `!!id`
+  - `useCreateUser()` — mutation, invalidate `queryKeys.users.all` pada success
+  - `useUpdateUser()` — mutation dengan parameter `{ id, data }`, invalidate `queryKeys.users.all`
+  - `useDeleteUser()` — mutation dengan parameter id string, invalidate `queryKeys.users.all`
+- **UsersPage Refactor** (`src/app/users/page.tsx`):
+  - Replace `useState` + `useEffect` + `usersApi.list()` → `useUserList(filters)`
+  - Replace create state manual → `useCreateUser().mutateAsync()`
+  - Replace delete state manual → `useDeleteUser().mutateAsync()`
+  - `refetch()` untuk tombol Retry pada error state
+  - Render `error?.message` untuk pesan error
+- **UserDetailPage Refactor** (`src/app/users/[id]/page.tsx`):
+  - Replace `useState` + `useEffect` + `usersApi.getById()` → `useUser(id)`
+  - Replace update state manual → `useUpdateUser().mutateAsync()`
+  - Replace delete state manual → `useDeleteUser().mutateAsync()`
+  - Navigasi ke `/users` setelah delete sukses
+  - Loading state via `isLoading`, error state via `error`
+- **UserTable Delete Standardization** (`src/app/users/_components/user-table.tsx`):
+  - Hapus import `usersApi` dan `ApiClientError`
+  - Prop `onDelete` berubah dari `() => void` menjadi `(id: string) => Promise<void>`
+  - `handleDelete` memanggil `await onDelete(deleteId)` tanpa logic API langsung
+  - State `deleteError` dihapus — error handling dipindahkan ke parent page via mutation state
+- **Catatan**: Modul Requests dan Audit Logs belum di-refactor dan masih menggunakan pola `useState` + `useEffect` + fetch manual.

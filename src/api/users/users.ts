@@ -1,7 +1,7 @@
 import { api } from '@/api/client';
 import type { IUser } from '@/types/domain';
 import type { TUserParams } from '@/app/users/_types/types';
-import type { PaginatedResponse, SingleResponse } from '@/api/types';
+import type { IPaginatedResponse, ISingleResponse } from '@/api/types';
 
 export const usersApi = {
     list: (params?: Partial<TUserParams>) => {
@@ -13,11 +13,11 @@ export const usersApi = {
         if (params?.pageSize) searchParams.append('pageSize', String(params.pageSize));
 
         const queryString = searchParams.toString();
-        return api.get<PaginatedResponse<IUser>>(`/api/users${queryString ? `?${queryString}` : ''}`);
+        return api.get<IPaginatedResponse<IUser>>(`/api/users${queryString ? `?${queryString}` : ''}`);
     },
-    getById: (id: string) => api.get<SingleResponse<IUser>>(`/api/users/${id}`),
-    create: (data: Partial<IUser>) => api.post<SingleResponse<IUser>>('/api/users', data),
-    update: (id: string, data: Partial<IUser>) => api.put<SingleResponse<IUser>>(`/api/users/${id}`, data),
-    patch: (id: string, data: Partial<IUser>) => api.patch<SingleResponse<IUser>>(`/api/users/${id}`, data),
+    getById: (id: string) => api.get<ISingleResponse<IUser>>(`/api/users/${id}`),
+    create: (data: Partial<IUser>) => api.post<ISingleResponse<IUser>>('/api/users', data),
+    update: (id: string, data: Partial<IUser>) => api.put<ISingleResponse<IUser>>(`/api/users/${id}`, data),
+    patch: (id: string, data: Partial<IUser>) => api.patch<ISingleResponse<IUser>>(`/api/users/${id}`, data),
     delete: (id: string) => api.delete<{ status_code: number; message: string; success: boolean }>(`/api/users/${id}`),
 };

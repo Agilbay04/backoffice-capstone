@@ -1,9 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { TUserParams } from '@/app/users/_types/types';
 import { USER_PARAMS_DEFAULT } from '@/app/users/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
-import { usersApi } from '@/api/users/users';
 import { MOCK_ROLES } from '@/app/users/_mocks/roles';
 import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
 import UserTable from '@/app/users/_components/user-table';
@@ -18,16 +17,18 @@ import {
 import type { IDropdownOption, IUser } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
+import { useUserList } from '@/app/users/_hooks/use-user-list';
+import { useCreateUser } from '@/app/users/_hooks/use-create-user';
 import { ApiClientError } from '@/api/client';
+import { useDeleteUser } from './_hooks/use-delete-user';
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<TUserParams>(USER_PARAMS_DEFAULT);
-
-  const [users, setUsers] = useState<IUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const { data, isLoading, error, refetch } = useUserList(filters);
+  const createMutation = useCreateUser();
+  const deleteMutation = useDeleteUser();
 
   const handleFilterChange = useCallback((key: keyof TUserParams, value: string | number) => {
     setFilters((prev) => ({
@@ -37,60 +38,17 @@ export default function UsersPage() {
     }));
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await usersApi.list({
-          search: filters.search,
-          role: filters.role,
-          status: filters.status,
-          page: filters.page,
-          pageSize: filters.pageSize,
-        });
-
-        if (!cancelled) {
-          setUsers(response.items);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          if (err instanceof ApiClientError) {
-            setError(err.message);
-          } else {
-            setError('Failed to load users. Please try again.');
-          }
-          
-          setUsers([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchUsers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [filters]);
-
-  const handleCreateUser = useCallback(async (data: Partial<IUser>) => {
+  const handleCreateUser =  async (formData: Partial<IUser>) => {
     try {
-      await usersApi.create(data);
-      return { success: true };
+        await createMutation.mutateAsync(formData);
+        return { success: true };
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        return { success: false, error: err.message };
-      }
-      return { success: false, error: 'Failed to create user.' };
+        return {
+            success: false,
+            error: err instanceof ApiClientError ? err.message : 'Failed to create user.',
+        };
     }
-  }, []);
+};
 
   const renderContent = () => {
     if (isLoading) {
@@ -107,11 +65,11 @@ export default function UsersPage() {
     if (error) {
       return (
         <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <span className="text-sm font-medium text-red-600">{error}</span>
+          <span className="text-sm font-medium text-red-600">{error?.message}</span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setFilters((prev) => ({ ...prev }))}
+            onClick={() => refetch()}
           >
             Retry
           </Button>
@@ -121,7 +79,10 @@ export default function UsersPage() {
 
     return (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <UserTable data={users} onDelete={() => setFilters((prev) => ({ ...prev }))} />
+        <UserTable 
+          data={data?.items ?? []} 
+          onDelete={async (id) => { await deleteMutation.mutateAsync(id); }} 
+        />
       </div>
     );
   }
@@ -184,7 +145,6 @@ export default function UsersPage() {
             onSubmit={handleCreateUser}
             onSuccess={() => {
               setIsCreateOpen(false);
-              setFilters((prev) => ({ ...prev }));
             }}
           />
         </DialogContent>
@@ -194,9 +154,7 @@ export default function UsersPage() {
 }
 
 function roleOptions(): IDropdownOption[] {
-  if (MOCK_ROLES?.length === 0) {
-    return [];
-  };
+  if (MOCK_ROLES?.length === 0) return [];
 
   return MOCK_ROLES?.map((role) => ({
     key: role?.name,
