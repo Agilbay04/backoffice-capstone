@@ -1,6 +1,6 @@
-import type { User } from '@/types/domain';
+import type { IUser } from '@/types/domain';
 
-export const MOCK_USERS: User[] = [
+export const MOCK_USERS: IUser[] = [
   { 
     id: '1', 
     name: 'Mama Ghufron', 

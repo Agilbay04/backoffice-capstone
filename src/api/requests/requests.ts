@@ -1,5 +1,5 @@
 import { api } from '@/api/client';
-import type { Request } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 import type { PaginatedResponse, SingleResponse } from '@/api/types';
 
 interface RequestsListParams {
@@ -19,16 +19,16 @@ export const requestsApi = {
     if (params?.page) searchParams.set('page', String(params.page));
     if (params?.pageSize) searchParams.set('pageSize', String(params.pageSize));
     const qs = searchParams.toString();
-    return api.get<PaginatedResponse<Request>>(`/api/requests${qs ? `?${qs}` : ''}`);
+    return api.get<PaginatedResponse<IRequest>>(`/api/requests${qs ? `?${qs}` : ''}`);
   },
   getById: (id: string) =>
-    api.get<SingleResponse<Request>>(`/api/requests/${id}`),
-  create: (data: Partial<Request>) =>
-    api.post<SingleResponse<Request>>('/api/requests', data),
-  update: (id: string, data: Partial<Request>) =>
-    api.put<SingleResponse<Request>>(`/api/requests/${id}`, data),
+    api.get<SingleResponse<IRequest>>(`/api/requests/${id}`),
+  create: (data: Partial<IRequest>) =>
+    api.post<SingleResponse<IRequest>>('/api/requests', data),
+  update: (id: string, data: Partial<IRequest>) =>
+    api.put<SingleResponse<IRequest>>(`/api/requests/${id}`, data),
   delete: (id: string) =>
     api.delete<{ status_code: number; message: string; success: boolean }>(`/api/requests/${id}`),
   updateStatus: (id: string, status: string) =>
-    api.put<SingleResponse<Request>>(`/api/requests/${id}/status`, { status }),
+    api.put<SingleResponse<IRequest>>(`/api/requests/${id}/status`, { status }),
 };

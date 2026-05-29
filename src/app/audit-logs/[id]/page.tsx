@@ -5,13 +5,13 @@ import { Badge } from '@/app/_components/ui/badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
-import type { AuditLog } from '@/types/domain';
+import type { IAuditLog } from '@/types/domain';
 
 export default function AuditLogDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [log, setLog] = useState<AuditLog | null>(null);
+    const [log, setLog] = useState<IAuditLog | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

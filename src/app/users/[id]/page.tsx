@@ -5,7 +5,7 @@ import StatusBadge from '@/app/_components/status-badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
-import type { User } from '@/types/domain';
+import type { IUser } from '@/types/domain';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +63,7 @@ export default function UserDetailPage() {
     };
   }, [id]);
 
-  const handleEdit = async (data: Partial<User>) => {
+  const handleEdit = async (data: Partial<IUser>) => {
     if (!id) return { success: false };
     try {
       const response = await usersApi.update(id, data);

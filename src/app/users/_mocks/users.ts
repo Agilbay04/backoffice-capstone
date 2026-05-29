@@ -1,6 +1,6 @@
-import type { User } from '@/types/domain';
+import type { IUser } from '@/types/domain';
 
-export const MOCK_USERS: User[] = [
+export const MOCK_USERS: IUser[] = [
   { id: '1', name: 'Mama Ghufron', email: 'admin@example.com', role: 'admin', status: 'active', createdAt: '2026-05-15', password: 'password123' },
   { id: '2', name: 'Manager Ghufron 1', email: 'mng.ghufron1@example.com', role: 'manager', status: 'inactive', createdAt: '2026-05-16', password: 'password123' },
   { id: '3', name: 'Manager Ghufron 2', email: 'mng.ghufron4@example.com', role: 'manager', status: 'active', createdAt: '2026-05-19', password: 'password123' },

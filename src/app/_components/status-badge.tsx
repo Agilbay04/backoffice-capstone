@@ -1,9 +1,9 @@
 import React from "react";
-import type { UserStatus } from "@/types/domain";
+import type { TUserStatus } from "@/types/domain";
 import { Badge } from "@/app/_components/ui/badge";
 
 interface StatusBadgeProps {
-    status: UserStatus;
+    status: TUserStatus;
 }
 
 function StatusBadge({ status }: StatusBadgeProps) {

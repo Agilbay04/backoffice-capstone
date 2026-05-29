@@ -1,22 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { AuditLogListQuery } from '@/app/audit-logs/_types/audit-log-list-query';
-import { AUDIT_LOG_QUERY_DEFAULTS } from '@/app/audit-logs/_const/audit-log-query-defaults';
+import type { TAuditLogParams } from '@/app/audit-logs/_types/types';
+import { AUDIT_LOG_PARAMS_DEFAULT } from '@/app/audit-logs/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import { auditLogsApi } from '@/api/audit-logs/audit-logs';
 import AuditLogTable from '@/app/audit-logs/_components/audit-log-table';
-import type { AuditLog } from '@/types/domain';
+import type { IAuditLog } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
 
 export default function AuditLogsPage() {
-    const [filters, setFilters] = useState<AuditLogListQuery>(AUDIT_LOG_QUERY_DEFAULTS);
+    const [filters, setFilters] = useState<TAuditLogParams>(AUDIT_LOG_PARAMS_DEFAULT);
 
-    const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [logs, setLogs] = useState<IAuditLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const handleFilterChange = useCallback((key: keyof AuditLogListQuery, value: string | number) => {
+    const handleFilterChange = useCallback((key: keyof TAuditLogParams, value: string | number) => {
         setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
     }, []);
 
@@ -52,6 +52,32 @@ export default function AuditLogsPage() {
         return () => { cancelled = true; };
     }, [filters]);
 
+    const renderContent = () => {
+        if (isLoading) {
+            return (
+                <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
+                    <Spinner className="text-slate-900" />
+                    <span className="text-xs font-medium text-slate-400 animate-pulse">Fetching audit logs...</span>
+                </div>
+            );
+        }
+
+        if (error) {
+            return (
+                <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
+                    <span className="text-sm font-medium text-red-600">{error}</span>
+                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
+                </div>
+            );
+        }
+
+        return (
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <AuditLogTable data={logs} />
+            </div>
+        );
+    };
+
     return (
         <main className="space-y-6">
             <div>
@@ -70,22 +96,9 @@ export default function AuditLogsPage() {
                     />
                 </div>
             </section>
-
-            {isLoading ? (
-                <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <Spinner className="text-slate-900" />
-                    <span className="text-xs font-medium text-slate-400 animate-pulse">Fetching audit logs...</span>
-                </div>
-            ) : error ? (
-                <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error}</span>
-                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
-                </div>
-            ) : (
-                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                    <AuditLogTable data={logs} />
-                </div>
-            )}
+            
+            {/* Content */}
+            {renderContent()}
 
         </main>
     );

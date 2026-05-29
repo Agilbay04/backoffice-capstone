@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { MOCK_REQUESTS } from '../data/requests';
-import type { Request } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 import { paginated, apiResponse } from '@/api/mocks/response';
 
 export const requestsHandlers = [
@@ -59,8 +59,8 @@ export const requestsHandlers = [
 
   http.post('/api/requests', async ({ request }) => {
     await delay(600);
-    const body = (await request.json()) as Partial<Request>;
-    const newRequest: Request = {
+    const body = (await request.json()) as Partial<IRequest>;
+    const newRequest: IRequest = {
       id: `req-${MOCK_REQUESTS.length + 1}`,
       title: body.title ?? '',
       status: body.status ?? 'pending',
@@ -75,7 +75,7 @@ export const requestsHandlers = [
 
   http.put('/api/requests/:id', async ({ params, request }) => {
     await delay(500);
-    const body = (await request.json()) as Partial<Request>;
+    const body = (await request.json()) as Partial<IRequest>;
     const index = MOCK_REQUESTS.findIndex((r) => r.id === params.id);
     if (index === -1) {
       return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
@@ -101,7 +101,7 @@ export const requestsHandlers = [
     if (index === -1) {
       return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
     }
-    MOCK_REQUESTS[index] = { ...MOCK_REQUESTS[index], status: body.status as Request['status'] };
+    MOCK_REQUESTS[index] = { ...MOCK_REQUESTS[index], status: body.status as IRequest['status'] };
     return HttpResponse.json(apiResponse('Success update data.', { data: MOCK_REQUESTS[index] }));
   }),
 ];

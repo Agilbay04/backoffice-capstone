@@ -20,10 +20,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/app/_components/ui/dialog';
-import type { Request } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 
 interface RequestTableProps {
-  data: Request[];
+  data: IRequest[];
   onDelete: (id: string) => Promise<void>;
 }
 

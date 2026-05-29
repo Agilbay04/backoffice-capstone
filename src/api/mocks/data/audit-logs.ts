@@ -1,6 +1,6 @@
-import type { AuditLog } from '@/types/domain';
+import type { IAuditLog } from '@/types/domain';
 
-export const MOCK_AUDIT_LOGS: AuditLog[] = [
+export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   {
     id: 'log-1',
     actor: 'Mama Ghufron',

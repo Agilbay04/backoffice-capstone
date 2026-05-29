@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatusBadge from '@/app/_components/status-badge';
-import type { User } from '@/types/domain';
+import type { IUser } from '@/types/domain';
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ import { usersApi } from '@/api/users/users';
 import { ApiClientError } from '@/api/client';
 
 interface UserTableProps {
-  data: User[];
+  data: IUser[];
   onDelete: () => void;
 }
 

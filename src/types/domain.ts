@@ -1,57 +1,68 @@
-export type UserRole = 'admin' | 'operator' | 'manager';
-export type UserStatus = 'active' | 'inactive';
+// === Types ===
+export type TUserRole = 'admin' | 'operator' | 'manager';
+export type TUserStatus = 'active' | 'inactive';
+export type TRequestStatus = 'pending' | 'approved' | 'rejected';
+export type TRequestPriority = 'low' | 'medium' | 'high' | 'critical';
 
-export interface User {
+export type TBaseParams = {
+    search?: string;
+    page: number;
+    pageSize: number;
+};
+
+
+// === Interfaces ===
+export interface IUser {
     id: string;
     name: string;
     email: string;
-    role: UserRole;
-    status: UserStatus;
+    role: TUserRole;
+    status: TUserStatus;
     password: string;
     createdAt: string;
 }
 
-export interface Role {
+export interface IRole {
     id: string;
     name: string;
 }
 
-export interface Menu {
+export interface IMenu {
     id: string;
     name: string;
     url: string;
     icon: string;
 }
 
-export interface DropdownOption {
+export interface IDropdownOption {
     key: string;
     value: string;
 }
 
-export interface AuthRequest {
+export interface IAuthRequest {
     email: string;
     password: string;
 }
 
-export interface AuthResponse {
+export interface IAuthResponse {
     id: string;
     name: string;
     email: string;
-    role: UserRole;
-    status: UserStatus;
+    role: TUserRole;
+    status: TUserStatus;
 }
 
-export interface Request {
+export interface IRequest {
     id: string;
     title: string;
-    status: 'pending' | 'approved' | 'rejected';
-    priority: 'low' | 'medium' | 'high' | 'critical';
+    status: TRequestStatus;
+    priority: TRequestPriority;
     requestedBy: string;
     assignee: string | null;
     createdAt: string;
 }
 
-export interface AuditLog {
+export interface IAuditLog {
     id: string;
     actor: string;
     action: string;

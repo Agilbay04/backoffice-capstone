@@ -22,7 +22,7 @@ import {
   DialogFooter,
 } from '@/app/_components/ui/dialog';
 import { ApiClientError } from '@/api/client';
-import type { Request } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 
 const STATUS_OPTIONS = [
     { value: 'pending', label: 'Pending' },
@@ -48,7 +48,7 @@ export default function RequestDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [request, setRequest] = useState<Request | null>(null);
+    const [request, setRequest] = useState<IRequest | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -137,7 +137,7 @@ export default function RequestDetailPage() {
         try {
             const response = await requestsApi.update(id, {
                 title: editTitle,
-                priority: editPriority as Request['priority'],
+                priority: editPriority as IRequest['priority'],
                 requestedBy: editRequestedBy,
                 assignee: editAssignee || null,
             });

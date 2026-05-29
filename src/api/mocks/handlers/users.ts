@@ -1,7 +1,7 @@
 import { http, HttpResponse, delay } from 'msw';
 import { MOCK_USERS } from '../data/users';
 import { omit } from '@/utils/utils';
-import type { User } from '@/types/domain';
+import type { IUser } from '@/types/domain';
 import { paginated, apiResponse } from '@/api/mocks/response';
 
 export const usersHandlers = [
@@ -59,8 +59,8 @@ export const usersHandlers = [
 
   http.post('/api/users', async ({ request }) => {
     await delay(600);
-    const body = (await request.json()) as Partial<User>;
-    const newUser: User = {
+    const body = (await request.json()) as Partial<IUser>;
+    const newUser: IUser = {
       id: String(MOCK_USERS.length + 1),
       name: body.name ?? '',
       email: body.email ?? '',
@@ -75,7 +75,7 @@ export const usersHandlers = [
 
   http.put('/api/users/:id', async ({ params, request }) => {
     await delay(500);
-    const body = (await request.json()) as Partial<User>;
+    const body = (await request.json()) as Partial<IUser>;
     const index = MOCK_USERS.findIndex((u) => u.id === params.id);
     if (index === -1) {
       return HttpResponse.json(apiResponse('User not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });

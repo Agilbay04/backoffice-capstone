@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { RequestListQuery } from '@/app/requests/_types/request-list-query';
-import { REQUEST_QUERY_DEFAULTS } from '@/app/requests/_const/request-query-defaults';
+import type { TRequestParams } from '@/app/requests/_types/types';
+import { REQUEST_PARAMS_DEFAULT } from '@/app/requests/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
 import { requestsApi } from '@/api/requests/requests';
 import RequestTable from '@/app/requests/_components/request-table';
-import type { DropdownOption, Request } from '@/types/domain';
+import type { IDropdownOption, IRequest } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
@@ -19,13 +19,13 @@ import {
 import { FormInput } from '@/app/_components/ui/form-input';
 import { useForm } from 'react-hook-form';
 
-const STATUS_OPTIONS: DropdownOption[] = [
+const STATUS_OPTIONS: IDropdownOption[] = [
     { key: 'pending', value: 'pending' },
     { key: 'approved', value: 'approved' },
     { key: 'rejected', value: 'rejected' },
 ];
 
-const PRIORITY_OPTIONS: DropdownOption[] = [
+const PRIORITY_OPTIONS: IDropdownOption[] = [
     { key: 'low', value: 'low' },
     { key: 'medium', value: 'medium' },
     { key: 'high', value: 'high' },
@@ -33,9 +33,9 @@ const PRIORITY_OPTIONS: DropdownOption[] = [
 ];
 
 export default function RequestsPage() {
-    const [filters, setFilters] = useState<RequestListQuery>(REQUEST_QUERY_DEFAULTS);
+    const [filters, setFilters] = useState<TRequestParams>(REQUEST_PARAMS_DEFAULT);
 
-    const [requests, setRequests] = useState<Request[]>([]);
+    const [requests, setRequests] = useState<IRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +50,7 @@ export default function RequestsPage() {
         },
     });
 
-    const handleFilterChange = useCallback((key: keyof RequestListQuery, value: string | number) => {
+    const handleFilterChange = useCallback((key: keyof TRequestParams, value: string | number) => {
         setFilters((prev) => ({
             ...prev,
             [key]: value,
@@ -121,6 +121,32 @@ export default function RequestsPage() {
         }
     };
 
+    const renderContent = () => {
+        if (isLoading) {
+            return (
+                <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
+                    <Spinner className="text-slate-900" />
+                    <span className="text-xs font-medium text-slate-400 animate-pulse">Fetching requests...</span>
+                </div>
+            );
+        }
+
+        if (error) {
+            return (
+                <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
+                    <span className="text-sm font-medium text-red-600">{error}</span>
+                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
+                </div>
+            );
+        }
+
+        return (
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <RequestTable data={requests} onDelete={handleDelete} />
+            </div>
+        );
+    };
+
     return (
         <main className="space-y-6">
             <div className="flex items-center justify-between">
@@ -163,21 +189,7 @@ export default function RequestsPage() {
                 </div>
             </section>
 
-            {isLoading ? (
-                <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <Spinner className="text-slate-900" />
-                    <span className="text-xs font-medium text-slate-400 animate-pulse">Fetching requests...</span>
-                </div>
-            ) : error ? (
-                <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error}</span>
-                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
-                </div>
-            ) : (
-                <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                    <RequestTable data={requests} onDelete={handleDelete} />
-                </div>
-            )}
+            {renderContent()}
 
             <Dialog open={isCreateOpen} onOpenChange={(open) => { if (!open) { setIsCreateOpen(false); reset(); } }}>
                 <DialogContent>

@@ -1,4 +1,4 @@
-export const VERSION = '1.0.0';
+export const VERSION = import.meta.env.VITE_API_VERSION ?? '1.0.0';
 
 export function paginated<T>(items: T[], total: number, page: number, pageSize: number) {
     return {

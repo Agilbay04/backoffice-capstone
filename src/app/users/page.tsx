@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { UserListQuery } from '@/app/users/_types/user-list-query';
-import { USER_QUERY_DEFAULTS } from '@/app/users/_const/user-query-defaults';
+import type { TUserParams } from '@/app/users/_types/types';
+import { USER_PARAMS_DEFAULT } from '@/app/users/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
 import { usersApi } from '@/api/users/users';
@@ -15,21 +15,21 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/app/_components/ui/dialog';
-import type { DropdownOption, User } from '@/types/domain';
+import type { IDropdownOption, IUser } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
 
 export default function UsersPage() {
-  const [filters, setFilters] = useState<UserListQuery>(USER_QUERY_DEFAULTS);
+  const [filters, setFilters] = useState<TUserParams>(USER_PARAMS_DEFAULT);
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const handleFilterChange = useCallback((key: keyof UserListQuery, value: string | number) => {
+  const handleFilterChange = useCallback((key: keyof TUserParams, value: string | number) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
@@ -80,7 +80,7 @@ export default function UsersPage() {
     };
   }, [filters]);
 
-  const handleCreateUser = useCallback(async (data: Partial<User>) => {
+  const handleCreateUser = useCallback(async (data: Partial<IUser>) => {
     try {
       await usersApi.create(data);
       return { success: true };
@@ -91,6 +91,40 @@ export default function UsersPage() {
       return { success: false, error: 'Failed to create user.' };
     }
   }, []);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
+          <Spinner className="text-slate-900" />
+          <span className="text-xs font-medium text-slate-400 animate-pulse">
+            Fetching users data...
+          </span>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
+          <span className="text-sm font-medium text-red-600">{error}</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilters((prev) => ({ ...prev }))}
+          >
+            Retry
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <UserTable data={users} onDelete={() => setFilters((prev) => ({ ...prev }))} />
+      </div>
+    );
+  }
 
   return (
     <main className="space-y-6">
@@ -119,7 +153,7 @@ export default function UsersPage() {
           <DropdownInput
             label="Role"
             value={filters?.role}
-            options={RoleOptions()}
+            options={roleOptions()}
             onChange={(val) => handleFilterChange('role', val)}
           />
         </div>
@@ -134,29 +168,8 @@ export default function UsersPage() {
         </div>
       </section>
 
-      {isLoading ? (
-        <div className="w-full h-64 bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <Spinner className="text-slate-900" />
-          <span className="text-xs font-medium text-slate-400 animate-pulse">
-            Fetching users data...
-          </span>
-        </div>
-      ) : error ? (
-        <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <span className="text-sm font-medium text-red-600">{error}</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilters((prev) => ({ ...prev }))}
-          >
-            Retry
-          </Button>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-          <UserTable data={users} onDelete={() => setFilters((prev) => ({ ...prev }))} />
-        </div>
-      )}
+      {/* Content */}
+      {renderContent()}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
@@ -180,9 +193,13 @@ export default function UsersPage() {
   );
 }
 
-function RoleOptions(): DropdownOption[] {
+function roleOptions(): IDropdownOption[] {
+  if (MOCK_ROLES?.length === 0) {
+    return [];
+  };
+
   return MOCK_ROLES?.map((role) => ({
     key: role?.name,
     value: role?.name
-  }))
-}
+  }));
+};

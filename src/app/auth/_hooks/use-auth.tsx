@@ -1,13 +1,13 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } 
 from "react";
-import type { AuthRequest, AuthResponse } from "@/types/domain";
+import type { IAuthRequest, IAuthResponse } from "@/types/domain";
 import { authApi } from "@/api/auth/auth";
 import { ApiClientError } from "@/api/client";
 
 interface AuthContextType {
-    user: AuthResponse | null;
+    user: IAuthResponse | null;
     isAuthenticated: boolean;
-    login: (authRequest: AuthRequest) => Promise<{ 
+    login: (authRequest: IAuthRequest) => Promise<{ 
         success: boolean; 
         error?: string 
     }>;
@@ -19,12 +19,12 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const AUTH_KEY = "auth_user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<AuthResponse | null>(() => {
+    const [user, setUser] = useState<IAuthResponse | null>(() => {
         const saved = localStorage.getItem(AUTH_KEY);
-        return saved ? JSON.parse(saved) as AuthResponse : null;
+        return saved ? JSON.parse(saved) as IAuthResponse : null;
     });
 
-    const login = useCallback(async (authRequest: AuthRequest): Promise<{ 
+    const login = useCallback(async (authRequest: IAuthRequest): Promise<{ 
         success: boolean; 
         error?: string 
     }> => {

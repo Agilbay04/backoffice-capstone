@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/app/_components/ui/select';
 import { Spinner } from '@/app/_components/ui/spinner';
-import type { User, UserRole, UserStatus } from '@/types/domain';
+import type { IUser, TUserRole, TUserStatus } from '@/types/domain';
 
 const userSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -27,18 +27,18 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 interface UserFormProps {
   mode: 'create' | 'edit';
-  defaultValues?: User;
+  defaultValues?: IUser;
   onSubmit: (data: UserFormValues) => Promise<{ success: boolean; error?: string }>;
   onSuccess: () => void;
 }
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+const ROLE_OPTIONS: { value: TUserRole; label: string }[] = [
   { value: 'admin', label: 'Admin' },
   { value: 'manager', label: 'Manager' },
   { value: 'operator', label: 'Operator' },
 ];
 
-const STATUS_OPTIONS: { value: UserStatus; label: string }[] = [
+const STATUS_OPTIONS: { value: TUserStatus; label: string }[] = [
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
 ];

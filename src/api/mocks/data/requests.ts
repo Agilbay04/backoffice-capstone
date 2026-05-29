@@ -1,6 +1,6 @@
-import type { Request } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 
-export const MOCK_REQUESTS: Request[] = [
+export const MOCK_REQUESTS: IRequest[] = [
   {
     id: 'req-1',
     title: 'Upgrade Server Database',

@@ -1,5 +1,5 @@
 import React from "react";
-import type { DropdownOption } from "@/types/domain";
+import type { IDropdownOption } from "@/types/domain";
 import {
     Select,
     SelectContent,
@@ -12,7 +12,7 @@ import { Label } from "@/app/_components/ui/label";
 interface DropdownInputProps {
     label: string;
     value: string | undefined;
-    options: DropdownOption[];
+    options: IDropdownOption[];
     onChange: (value: string) => void;
     style?: React.CSSProperties;
 }

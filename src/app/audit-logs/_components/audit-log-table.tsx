@@ -9,10 +9,10 @@ import {
   TableRow,
 } from '@/app/_components/ui/table';
 import { Badge } from '@/app/_components/ui/badge';
-import type { AuditLog } from '@/types/domain';
+import type { IAuditLog } from '@/types/domain';
 
 interface AuditLogTableProps {
-  data: AuditLog[];
+  data: IAuditLog[];
 }
 
 function AuditLogTable({ data }: AuditLogTableProps) {
