@@ -3,7 +3,7 @@ import type { IAuditLog } from '@/types/domain';
 export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   {
     id: 'log-1',
-    actor: 'Mama Ghufron',
+    actor: 'Super Admin',
     action: 'USER_LOGIN',
     target: 'admin@example.com',
     timestamp: '2026-05-20T09:15:00Z',
@@ -11,7 +11,7 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-2',
-    actor: 'Manager Ghufron 1',
+    actor: 'Manager 1',
     action: 'USER_CREATE',
     target: 'newuser@example.com',
     timestamp: '2026-05-19T14:30:00Z',
@@ -19,7 +19,7 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-3',
-    actor: 'Operator Ghufron 1',
+    actor: 'Operator 1',
     action: 'REQUEST_STATUS_UPDATE',
     target: 'req-1',
     timestamp: '2026-05-19T15:00:00Z',
@@ -27,7 +27,7 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-4',
-    actor: 'Admin Ghufron',
+    actor: 'Admin',
     action: 'USER_UPDATE',
     target: 'user-3',
     timestamp: '2026-05-18T10:00:00Z',
@@ -35,7 +35,7 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-5',
-    actor: 'Mama Ghufron',
+    actor: 'Super Admin',
     action: 'LOGOUT',
     target: 'admin@example.com',
     timestamp: '2026-05-20T17:00:00Z',
@@ -43,15 +43,15 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-6',
-    actor: 'Manager Ghufron 2',
+    actor: 'Manager 2',
     action: 'USER_LOGIN',
-    target: 'mng.ghufron4@example.com',
+    target: 'manager2@example.com',
     timestamp: '2026-05-20T08:30:00Z',
     details: 'Successful login',
   },
   {
     id: 'log-7',
-    actor: 'Operator Ghufron 2',
+    actor: 'Operator 2',
     action: 'REQUEST_CREATE',
     target: 'req-4',
     timestamp: '2026-05-20T09:00:00Z',
@@ -59,15 +59,15 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-8',
-    actor: 'Manager Ghufron 1',
+    actor: 'Manager 1',
     action: 'USER_LOGIN',
-    target: 'mng.ghufron1@example.com',
+    target: 'manager1@example.com',
     timestamp: '2026-05-19T07:45:00Z',
     details: 'Successful login',
   },
   {
     id: 'log-9',
-    actor: 'Admin Ghufron',
+    actor: 'Admin',
     action: 'REQUEST_STATUS_UPDATE',
     target: 'req-3',
     timestamp: '2026-05-17T16:00:00Z',
@@ -75,7 +75,7 @@ export const MOCK_AUDIT_LOGS: IAuditLog[] = [
   },
   {
     id: 'log-10',
-    actor: 'Mama Ghufron',
+    actor: 'Super Admin',
     action: 'PASSWORD_CHANGE',
     target: 'admin@example.com',
     timestamp: '2026-05-15T12:00:00Z',
