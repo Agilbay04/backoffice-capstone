@@ -10,4 +10,4 @@ export function useUser(id: string) {
         queryFn: () => usersApi.getById(id),
         enabled: !!id,
     });
-}
+};

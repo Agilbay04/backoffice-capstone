@@ -176,7 +176,7 @@ Hari kelima implementasi MSW (Mock Service Worker) sebagai lapisan API mock, API
 
 ### 22 Mei, Jumat: TanStack Query Integration
 
-Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan pola `useState` + `useEffect` + fetch manual pada modul Users.
+Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan pola `useState` + `useEffect` + fetch manual pada modul Users dan Requests.
 
 **Aktivitas:**
 
@@ -187,15 +187,22 @@ Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan 
   - `refetchOnWindowFocus: false` — tidak refetch saat tab kembali aktif
   - Client dibungkus dalam `<QueryClientProvider>` di root render tree
 - **Query Key Factory** (`src/api/query-keys.ts`): Membuat factory functions untuk query keys terstruktur per domain (`users`, `requests`, `auditLogs`) dengan hierarki `all`, `lists()`, `list(filters)`, `details()`, `detail(id)`.
-- **Query & Mutation Hooks** (`src/app/users/_hooks/`): Membuat 5 hooks untuk modul Users:
-  - `useUserList(filters)` — query dengan query key `queryKeys.users.list(filters)`, dependensi `[filters]`
-  - `useUser(id)` — query dengan query key `queryKeys.users.detail(id)`, enabled condition `!!id`
-  - `useCreateUser()` — mutation, invalidate `queryKeys.users.all` pada success
+- **Query & Mutation Hooks Users** (`src/app/users/_hooks/`): Membuat 5 hooks untuk modul Users:
+  - `useUserList(filters)` — query list dengan filter
+  - `useUser(id)` — query single user by id
+  - `useCreateUser()` — mutation, invalidate `queryKeys.users.all`
   - `useUpdateUser()` — mutation dengan parameter `{ id, data }`, invalidate `queryKeys.users.all`
-  - `useDeleteUser()` — mutation dengan parameter id string, invalidate `queryKeys.users.all`
+  - `useDeleteUser()` — mutation, invalidate `queryKeys.users.all`
+- **Query & Mutation Hooks Requests** (`src/app/requests/_hooks/`): Membuat 6 hooks untuk modul Requests:
+  - `useRequestList(filters)` — query list dengan filter
+  - `useRequest(id)` — query single request by id
+  - `useCreateRequest()` — mutation, invalidate `queryKeys.requests.all`
+  - `useUpdateRequest()` — mutation dengan parameter `{ id, data }`, invalidate `queryKeys.requests.all`
+  - `useDeleteRequest()` — mutation, invalidate `queryKeys.requests.all`
+  - `useUpdateRequestStatus()` — mutation dengan parameter `{ id, status }`, invalidate `queryKeys.requests.all`
 - **UsersPage Refactor** (`src/app/users/page.tsx`):
   - Replace `useState` + `useEffect` + `usersApi.list()` → `useUserList(filters)`
-  - Replace create state manual → `useCreateUser().mutateAsync()`
+  - Replace create state manual → `useCreateUser().mutateAsync()` + `UserForm`
   - Replace delete state manual → `useDeleteUser().mutateAsync()`
   - `refetch()` untuk tombol Retry pada error state
   - Render `error?.message` untuk pesan error
@@ -210,4 +217,15 @@ Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan 
   - Prop `onDelete` berubah dari `() => void` menjadi `(id: string) => Promise<void>`
   - `handleDelete` memanggil `await onDelete(deleteId)` tanpa logic API langsung
   - State `deleteError` dihapus — error handling dipindahkan ke parent page via mutation state
-- **Catatan**: Modul Requests dan Audit Logs belum di-refactor dan masih menggunakan pola `useState` + `useEffect` + fetch manual.
+- **RequestsPage Refactor** (`src/app/requests/page.tsx`):
+  - Replace `useState` + `useEffect` + `requestsApi.list()` → `useRequestList(filters)`
+  - Replace create state manual + inline form → `useCreateRequest().mutateAsync()` + `RequestForm` component
+  - Replace delete state manual → `useDeleteRequest().mutateAsync()`
+  - `refetch()` untuk tombol Retry, render `error?.message`
+- **RequestDetailPage Refactor** (`src/app/requests/[id]/page.tsx`):
+  - Replace `useState` + `useEffect` + `requestsApi.getById()` → `useRequest(id)`
+  - Replace inline edit form (13 useState) → `RequestForm` component (hanya 6 useState)
+  - Replace separate delete confirmation dialog → header action button langsung
+  - Mempertahankan panel "Update Status" yang unik untuk modul Requests
+  - Loading/error state via `isLoading` / `error` dari React Query
+- **Catatan**: Modul Audit Logs belum di-refactor dan masih menggunakan pola `useState` + `useEffect` + fetch manual.

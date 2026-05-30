@@ -1,11 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { TRequestParams } from '@/app/requests/_types/types';
 import { REQUEST_PARAMS_DEFAULT } from '@/app/requests/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
-import { requestsApi } from '@/api/requests/requests';
 import RequestTable from '@/app/requests/_components/request-table';
-import type { IRequest } from '@/types/domain';
+import RequestForm from '@/app/requests/_components/request-form';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
@@ -16,28 +15,20 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/app/_components/ui/dialog';
-import { FormInput } from '@/app/_components/ui/form-input';
-import { useForm } from 'react-hook-form';
 import { MOCK_STATUSES } from './_mocks/statuses';
 import { MOCK_PRIORITIES } from './_mocks/priorities';
+import { useRequestList } from './_hooks/use-request-list';
+import { useCreateRequest } from './_hooks/use-create-request';
+import { useDeleteRequest } from './_hooks/use-delete-request';
+import type { IRequest } from '@/types/domain';
 
 export default function RequestsPage() {
     const [filters, setFilters] = useState<TRequestParams>(REQUEST_PARAMS_DEFAULT);
-
-    const [requests, setRequests] = useState<IRequest[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [createError, setCreateError] = useState<string | null>(null);
 
-    const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
-        defaultValues: {
-            title: '',
-            requestedBy: '',
-            assignee: '',
-        },
-    });
+    const { data, isLoading, error, refetch } = useRequestList(filters);
+    const createMutation = useCreateRequest();
+    const deleteMutation = useDeleteRequest();
 
     const handleFilterChange = useCallback((key: keyof TRequestParams, value: string | number) => {
         setFilters((prev) => ({
@@ -47,66 +38,15 @@ export default function RequestsPage() {
         }));
     }, []);
 
-    useEffect(() => {
-        let cancelled = false;
-
-        const fetchRequests = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await requestsApi.list({
-                    search: filters.search,
-                    status: filters.status,
-                    priority: filters.priority,
-                    page: filters.page,
-                    pageSize: filters.perPage,
-                });
-                if (!cancelled) setRequests(response.items);
-            } catch (err) {
-                if (!cancelled) {
-                    if (err instanceof ApiClientError) {
-                        setError(err.message);
-                    } else {
-                        setError('Failed to load requests. Please try again.');
-                    }
-                    if (!cancelled) setRequests([]);
-                }
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        };
-
-        fetchRequests();
-        return () => { cancelled = true; };
-    }, [filters]);
-
-    const handleCreate = async (data: { title: string; requestedBy: string; assignee: string }) => {
-        setCreateError(null);
+    const handleCreate = async (formData: Partial<IRequest>) => {
         try {
-            await requestsApi.create(data);
-            setIsCreateOpen(false);
-            reset();
-            setFilters((prev) => ({ ...prev }));
+            await createMutation.mutateAsync(formData);
+            return { success: true };
         } catch (err) {
-            if (err instanceof ApiClientError) {
-                setCreateError(err.message);
-            } else {
-                setCreateError('Failed to create request.');
-            }
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        try {
-            await requestsApi.delete(id);
-            setFilters((prev) => ({ ...prev }));
-        } catch (err) {
-            if (err instanceof ApiClientError) {
-                setError(err.message);
-            } else {
-                setError('Failed to delete request.');
-            }
+            return {
+                success: false,
+                error: err instanceof ApiClientError ? err.message : 'Failed to create request.',
+            };
         }
     };
 
@@ -123,15 +63,24 @@ export default function RequestsPage() {
         if (error) {
             return (
                 <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error}</span>
-                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
+                    <span className="text-sm font-medium text-red-600">{error?.message}</span>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => refetch()}
+                    >
+                        Retry
+                    </Button>
                 </div>
             );
         }
 
         return (
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                <RequestTable data={requests} onDelete={handleDelete} />
+                <RequestTable 
+                    data={data?.items ?? []} 
+                    onDelete={async (id) => { await deleteMutation.mutateAsync(id); }} 
+                />
             </div>
         );
     };
@@ -180,42 +129,19 @@ export default function RequestsPage() {
 
             {renderContent()}
 
-            <Dialog open={isCreateOpen} onOpenChange={(open) => { if (!open) { setIsCreateOpen(false); reset(); } }}>
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Add New Request</DialogTitle>
                         <DialogDescription>Fill in the form to create a new request.</DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit(handleCreate)} noValidate className="space-y-4">
-                        {createError && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                {createError}
-                            </div>
-                        )}
-                        <FormInput
-                            label="Title"
-                            placeholder="Request title"
-                            error={errors?.title?.message}
-                            {...register('title', { required: 'Title is required' })}
-                        />
-                        <FormInput
-                            label="Requested By"
-                            placeholder="Requester name"
-                            error={errors?.requestedBy?.message}
-                            {...register('requestedBy', { required: 'Requester is required' })}
-                        />
-                        <FormInput
-                            label="Assignee"
-                            placeholder="Assignee name (optional)"
-                            error={errors?.assignee?.message}
-                            {...register('assignee')}
-                        />
-                        <Button type="submit" className="w-full bg-slate-900" disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <span className="flex items-center gap-2"><Spinner /> Creating...</span>
-                            ) : 'Create Request'}
-                        </Button>
-                    </form>
+                    <RequestForm
+                        mode="create"
+                        onSubmit={handleCreate}
+                        onSuccess={() => {
+                            setIsCreateOpen(false);
+                        }}
+                    />
                 </DialogContent>
             </Dialog>
         </main>

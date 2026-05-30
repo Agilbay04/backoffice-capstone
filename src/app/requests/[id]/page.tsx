@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { requestsApi } from '@/api/requests/requests';
 import RequestStatusBadge from '@/app/requests/_components/request-status-badge';
 import { Badge } from '@/app/_components/ui/badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
-import { FormInput } from '@/app/_components/ui/form-input';
 import {
   Select,
   SelectContent,
@@ -19,23 +17,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from '@/app/_components/ui/dialog';
 import { ApiClientError } from '@/api/client';
 import type { IRequest } from '@/types/domain';
-
-const STATUS_OPTIONS = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
-];
-
-const PRIORITY_OPTIONS = [
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-    { value: 'critical', label: 'Critical' },
-];
+import { MOCK_STATUSES } from '../_mocks/statuses';
+import { useRequest } from '../_hooks/use-request';
+import { useUpdateRequest } from '../_hooks/use-update-request';
+import { useDeleteRequest } from '../_hooks/use-delete-request';
+import { useUpdateRequestStatus } from '../_hooks/use-update-request-status';
+import RequestForm from '../_components/request-form';
 
 const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' | 'outline'> = {
     critical: 'destructive',
@@ -48,113 +38,42 @@ export default function RequestDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [request, setRequest] = useState<IRequest | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data, isLoading, error } = useRequest(id!);
+    const updateMutation = useUpdateRequest();
+    const deleteMutation = useDeleteRequest();
+    const statusMutation = useUpdateRequestStatus();
+
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const [selectedStatus, setSelectedStatus] = useState<string>('');
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateError, setUpdateError] = useState<string | null>(null);
 
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [editTitle, setEditTitle] = useState('');
-    const [editPriority, setEditPriority] = useState('');
-    const [editRequestedBy, setEditRequestedBy] = useState('');
-    const [editAssignee, setEditAssignee] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-    const [editError, setEditError] = useState<string | null>(null);
-
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!id) return;
-
-        let cancelled = false;
-
-        const fetchRequest = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await requestsApi.getById(id);
-                if (!cancelled) {
-                    const resData = response.data as IRequest;
-                    setRequest(resData);
-                    setSelectedStatus(resData.status);
-                    setEditTitle(resData.title);
-                    setEditPriority(resData.priority);
-                    setEditRequestedBy(resData.requestedBy);
-                    setEditAssignee(resData.assignee ?? '');
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    if (err instanceof ApiClientError) {
-                        setError(err.message);
-                    } else {
-                        setError('Failed to load request.');
-                    }
-                }
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchRequest();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [id]);
-
-    const handleStatusUpdate = async () => {
-        if (!id || !selectedStatus || selectedStatus === request?.status) return;
-
-        setIsUpdating(true);
-        setUpdateError(null);
-
+    const handleEdit = async (formData: Partial<IRequest>) => {
+        if (!id) return { success: false };
         try {
-            const response = await requestsApi.updateStatus(id, selectedStatus);
-            setRequest(response.data as IRequest);
+            await updateMutation.mutateAsync({ id, data: formData });
+            return { success: true };
         } catch (err) {
-            if (err instanceof ApiClientError) {
-                setUpdateError(err.message);
-            } else {
-                setUpdateError('Failed to update status.');
-            }
-        } finally {
-            setIsUpdating(false);
+            return {
+                success: false,
+                error: err instanceof ApiClientError ? err.message : 'Failed to update request.',
+            };
         }
     };
 
-    const handleEditSave = async () => {
-        if (!id) return;
-        setIsSaving(true);
-        setEditError(null);
-
+    const handleStatusUpdate = async () => {
+        if (!id || !selectedStatus || selectedStatus === data?.data?.status) return;
+        setIsUpdating(true);
+        setUpdateError(null);
         try {
-            const response = await requestsApi.update(id, {
-                title: editTitle,
-                priority: editPriority as IRequest['priority'],
-                requestedBy: editRequestedBy,
-                assignee: editAssignee || null,
-            });
-
-            const resData = response.data as IRequest;
-            setRequest(resData);
-            setSelectedStatus(resData.status);
-            setIsEditOpen(false);
+            await statusMutation.mutateAsync({ id, status: selectedStatus });
         } catch (err) {
-            if (err instanceof ApiClientError) {
-                setEditError(err.message);
-            } else {
-                setEditError('Failed to update request.');
-            }
+            setUpdateError(err instanceof ApiClientError ? err.message : 'Failed to update status.');
         } finally {
-            setIsSaving(false);
+            setIsUpdating(false);
         }
     };
 
@@ -162,16 +81,13 @@ export default function RequestDetailPage() {
         if (!id) return;
         setIsDeleting(true);
         setDeleteError(null);
-
         try {
-            await requestsApi.delete(id);
+            await deleteMutation.mutateAsync(id);
             navigate('/requests', { replace: true });
         } catch (err) {
-            if (err instanceof ApiClientError) {
-                setDeleteError(err.message);
-            } else {
-                setDeleteError('Failed to delete request.');
-            }
+            setDeleteError(
+                err instanceof ApiClientError ? err.message : 'Failed to delete request.'
+            );
         } finally {
             setIsDeleting(false);
         }
@@ -188,16 +104,18 @@ export default function RequestDetailPage() {
         );
     }
 
-    if (error || !request) {
+    if (error || !data?.data) {
         return (
             <main className="space-y-6">
                 <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error ?? 'Request not found.'}</span>
+                    <span className="text-sm font-medium text-red-600">{error instanceof Error ? error.message : 'Request not found.'}</span>
                     <Button variant="outline" size="sm" onClick={() => navigate('/requests')}>Back to Requests</Button>
                 </div>
             </main>
         );
     }
+
+    const request = data.data;
 
     return (
         <main className="space-y-6">
@@ -211,7 +129,13 @@ export default function RequestDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Button className="bg-slate-900" onClick={() => setIsEditOpen(true)}>Edit</Button>
-                    <Button variant="destructive" onClick={() => setIsDeleteOpen(true)}>Delete</Button>
+                    <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                    </Button>
                 </div>
             </div>
 
@@ -260,8 +184,8 @@ export default function RequestDetailPage() {
                                     <SelectValue placeholder="Select status" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {STATUS_OPTIONS.map((opt) => (
-                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    {MOCK_STATUSES.map((opt) => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.value}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -282,45 +206,14 @@ export default function RequestDetailPage() {
                         <DialogTitle>Edit Request</DialogTitle>
                         <DialogDescription>Update request details below.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        {editError && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{editError}</div>
-                        )}
-                        <FormInput label="Title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Request title" />
-                        <FormInput label="Requested By" value={editRequestedBy} onChange={(e) => setEditRequestedBy(e.target.value)} placeholder="Requester name" />
-                        <FormInput label="Assignee" value={editAssignee} onChange={(e) => setEditAssignee(e.target.value)} placeholder="Assignee name" />
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium">Priority</label>
-                            <Select value={editPriority} onValueChange={setEditPriority}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select priority" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {PRIORITY_OPTIONS.map((opt) => (
-                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button className="w-full bg-slate-900" onClick={handleEditSave} disabled={isSaving}>
-                            {isSaving ? <span className="flex items-center gap-2"><Spinner /> Saving...</span> : 'Save Changes'}
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Request</DialogTitle>
-                        <DialogDescription>Are you sure? This action cannot be undone.</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)} disabled={isDeleting}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                            {isDeleting ? <span className="flex items-center gap-2"><Spinner /> Deleting...</span> : 'Delete'}
-                        </Button>
-                    </DialogFooter>
+                    <RequestForm
+                        mode="edit"
+                        defaultValues={request}
+                        onSubmit={handleEdit}
+                        onSuccess={() => {
+                            setIsEditOpen(false);
+                        }}
+                    />
                 </DialogContent>
             </Dialog>
         </main>
