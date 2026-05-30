@@ -80,12 +80,13 @@ export default function RequestDetailPage() {
             try {
                 const response = await requestsApi.getById(id);
                 if (!cancelled) {
-                    setRequest(response.data);
-                    setSelectedStatus(response.data.status);
-                    setEditTitle(response.data.title);
-                    setEditPriority(response.data.priority);
-                    setEditRequestedBy(response.data.requestedBy);
-                    setEditAssignee(response.data.assignee ?? '');
+                    const resData = response.data as IRequest;
+                    setRequest(resData);
+                    setSelectedStatus(resData.status);
+                    setEditTitle(resData.title);
+                    setEditPriority(resData.priority);
+                    setEditRequestedBy(resData.requestedBy);
+                    setEditAssignee(resData.assignee ?? '');
                 }
             } catch (err) {
                 if (!cancelled) {
@@ -117,7 +118,7 @@ export default function RequestDetailPage() {
 
         try {
             const response = await requestsApi.updateStatus(id, selectedStatus);
-            setRequest(response.data);
+            setRequest(response.data as IRequest);
         } catch (err) {
             if (err instanceof ApiClientError) {
                 setUpdateError(err.message);
@@ -141,8 +142,10 @@ export default function RequestDetailPage() {
                 requestedBy: editRequestedBy,
                 assignee: editAssignee || null,
             });
-            setRequest(response.data);
-            setSelectedStatus(response.data.status);
+
+            const resData = response.data as IRequest;
+            setRequest(resData);
+            setSelectedStatus(resData.status);
             setIsEditOpen(false);
         } catch (err) {
             if (err instanceof ApiClientError) {

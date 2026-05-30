@@ -10,7 +10,7 @@ export const usersApi = {
         if (params?.role) searchParams.append('role', params.role);
         if (params?.status) searchParams.append('status', params.status);
         if (params?.page) searchParams.append('page', String(params.page));
-        if (params?.pageSize) searchParams.append('pageSize', String(params.pageSize));
+        if (params?.perPage) searchParams.append('pageSize', String(params.perPage));
 
         const queryString = searchParams.toString();
         return api.get<IPaginatedResponse<IUser>>(`/api/users${queryString ? `?${queryString}` : ''}`);

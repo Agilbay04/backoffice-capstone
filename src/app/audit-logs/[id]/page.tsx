@@ -26,7 +26,7 @@ export default function AuditLogDetailPage() {
 
             try {
                 const response = await auditLogsApi.getById(id);
-                if (!cancelled) setLog(response.data);
+                if (!cancelled) setLog(response.data as IAuditLog);
             } catch (err) {
                 if (!cancelled) {
                     if (err instanceof ApiClientError) {

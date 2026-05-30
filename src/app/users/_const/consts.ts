@@ -5,5 +5,5 @@ export const USER_PARAMS_DEFAULT: TUserParams = {
     role: "all",
     status: "all",
     page: 1,
-    pageSize: 10
+    perPage: 10
 };

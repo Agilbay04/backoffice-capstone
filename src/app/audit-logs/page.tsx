@@ -31,7 +31,7 @@ export default function AuditLogsPage() {
                 const response = await auditLogsApi.list({
                     search: filters.search,
                     page: filters.page,
-                    pageSize: filters.pageSize,
+                    perPage: filters.perPage,
                 });
                 if (!cancelled) setLogs(response.items);
             } catch (err) {

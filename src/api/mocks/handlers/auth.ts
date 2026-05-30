@@ -14,7 +14,7 @@ export const authHandlers = [
 
     if (!user) {
       return HttpResponse.json(
-        apiResponse('Invalid email or password', { status_code: 401, code: 'AUTH_INVALID', success: false }),
+        apiResponse('Invalid email or password', { status_code: 401, success: false }),
         { status: 401 }
       );
     }

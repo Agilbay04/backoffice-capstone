@@ -12,14 +12,16 @@ import {
   SelectValue,
 } from '@/app/_components/ui/select';
 import { Spinner } from '@/app/_components/ui/spinner';
-import type { IUser, TUserRole, TUserStatus } from '@/types/domain';
+import type { IUser } from '@/types/domain';
+import { MOCK_ROLES } from '@/app/users/_mocks/roles';
+import { STATUS_OPTIONS } from '@/app/users/_mocks/statuses';
 
 const userSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z
     .email('Invalid email format')
     .min(1, 'Email is required'),
-  role: z.enum(['admin', 'manager', 'operator'], 'Please select a valid role'),
+  role: z.enum(['super-admin', 'admin', 'manager', 'operator'], 'Please select a valid role'),
   status: z.enum(['active', 'inactive'], 'Please select a valid status'),
 });
 
@@ -31,17 +33,6 @@ interface UserFormProps {
   onSubmit: (data: UserFormValues) => Promise<{ success: boolean; error?: string }>;
   onSuccess: () => void;
 }
-
-const ROLE_OPTIONS: { value: TUserRole; label: string }[] = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'operator', label: 'Operator' },
-];
-
-const STATUS_OPTIONS: { value: TUserStatus; label: string }[] = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-];
 
 export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: UserFormProps) {
     const {
@@ -110,9 +101,9 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
                                 <SelectValue placeholder="Choose role" />
                             </SelectTrigger>
                             <SelectContent>
-                                {ROLE_OPTIONS.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
+                                {MOCK_ROLES.map((opt) => (
+                                    <SelectItem key={opt?.id} value={opt?.code}>
+                                        {opt?.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -140,8 +131,8 @@ export default function UserForm({ mode, defaultValues, onSubmit, onSuccess }: U
                             </SelectTrigger>
                             <SelectContent>
                                 {STATUS_OPTIONS.map((opt) => (
-                                    <SelectItem key={opt.value} value={opt.value}>
-                                        {opt.label}
+                                    <SelectItem key={opt.key} value={opt.value}>
+                                        {opt.value}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

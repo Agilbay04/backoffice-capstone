@@ -157,7 +157,7 @@ function roleOptions(): IDropdownOption[] {
   if (MOCK_ROLES?.length === 0) return [];
 
   return MOCK_ROLES?.map((role) => ({
-    key: role?.name,
+    key: role?.code,
     value: role?.name
   }));
 };

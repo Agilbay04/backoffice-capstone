@@ -9,13 +9,13 @@ export const requestsHandlers = [
 
     const errorScenario = url.searchParams.get('__error');
     if (errorScenario === '401') {
-      return HttpResponse.json(apiResponse('Session expired', { status_code: 401, code: 'AUTH_EXPIRED', success: false }), { status: 401 });
+      return HttpResponse.json(apiResponse('Session expired', { status_code: 401, success: false }), { status: 401 });
     }
     if (errorScenario === '403') {
-      return HttpResponse.json(apiResponse('Forbidden', { status_code: 403, code: 'FORBIDDEN', success: false }), { status: 403 });
+      return HttpResponse.json(apiResponse('Forbidden', { status_code: 403, success: false }), { status: 403 });
     }
     if (errorScenario === '500') {
-      return HttpResponse.json(apiResponse('Server error', { status_code: 500, code: 'SERVER_ERROR', success: false }), { status: 500 });
+      return HttpResponse.json(apiResponse('Server error', { status_code: 500, success: false }), { status: 500 });
     }
     if (errorScenario === 'empty') {
       return HttpResponse.json(paginated([], 0, 1, 10));
@@ -52,7 +52,7 @@ export const requestsHandlers = [
     await delay(300);
     const request_item = MOCK_REQUESTS.find((r) => r.id === params.id);
     if (!request_item) {
-      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, success: false }), { status: 404 });
     }
     return HttpResponse.json(apiResponse('Success get request.', { data: request_item }));
   }),
@@ -78,7 +78,7 @@ export const requestsHandlers = [
     const body = (await request.json()) as Partial<IRequest>;
     const index = MOCK_REQUESTS.findIndex((r) => r.id === params.id);
     if (index === -1) {
-      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, success: false }), { status: 404 });
     }
     MOCK_REQUESTS[index] = { ...MOCK_REQUESTS[index], ...body };
     return HttpResponse.json(apiResponse('Success update data.', { data: MOCK_REQUESTS[index] }));
@@ -88,7 +88,7 @@ export const requestsHandlers = [
     await delay(400);
     const index = MOCK_REQUESTS.findIndex((r) => r.id === params.id);
     if (index === -1) {
-      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, success: false }), { status: 404 });
     }
     MOCK_REQUESTS.splice(index, 1);
     return HttpResponse.json(apiResponse('Success delete data.'));
@@ -99,7 +99,7 @@ export const requestsHandlers = [
     const body = (await request.json()) as { status: string };
     const index = MOCK_REQUESTS.findIndex((r) => r.id === params.id);
     if (index === -1) {
-      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('Request not found', { status_code: 404, success: false }), { status: 404 });
     }
     MOCK_REQUESTS[index] = { ...MOCK_REQUESTS[index], status: body.status as IRequest['status'] };
     return HttpResponse.json(apiResponse('Success update data.', { data: MOCK_REQUESTS[index] }));

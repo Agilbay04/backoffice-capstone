@@ -5,7 +5,7 @@ import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
 import { requestsApi } from '@/api/requests/requests';
 import RequestTable from '@/app/requests/_components/request-table';
-import type { IDropdownOption, IRequest } from '@/types/domain';
+import type { IRequest } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
@@ -18,19 +18,8 @@ import {
 } from '@/app/_components/ui/dialog';
 import { FormInput } from '@/app/_components/ui/form-input';
 import { useForm } from 'react-hook-form';
-
-const STATUS_OPTIONS: IDropdownOption[] = [
-    { key: 'pending', value: 'pending' },
-    { key: 'approved', value: 'approved' },
-    { key: 'rejected', value: 'rejected' },
-];
-
-const PRIORITY_OPTIONS: IDropdownOption[] = [
-    { key: 'low', value: 'low' },
-    { key: 'medium', value: 'medium' },
-    { key: 'high', value: 'high' },
-    { key: 'critical', value: 'critical' },
-];
+import { MOCK_STATUSES } from './_mocks/statuses';
+import { MOCK_PRIORITIES } from './_mocks/priorities';
 
 export default function RequestsPage() {
     const [filters, setFilters] = useState<TRequestParams>(REQUEST_PARAMS_DEFAULT);
@@ -71,7 +60,7 @@ export default function RequestsPage() {
                     status: filters.status,
                     priority: filters.priority,
                     page: filters.page,
-                    pageSize: filters.pageSize,
+                    pageSize: filters.perPage,
                 });
                 if (!cancelled) setRequests(response.items);
             } catch (err) {
@@ -174,7 +163,7 @@ export default function RequestsPage() {
                     <DropdownInput
                         label="Status"
                         value={filters?.status}
-                        options={STATUS_OPTIONS}
+                        options={MOCK_STATUSES}
                         onChange={(val) => handleFilterChange('status', val)}
                     />
                 </div>
@@ -183,7 +172,7 @@ export default function RequestsPage() {
                     <DropdownInput
                         label="Priority"
                         value={filters?.priority}
-                        options={PRIORITY_OPTIONS}
+                        options={MOCK_PRIORITIES}
                         onChange={(val) => handleFilterChange('priority', val)}
                     />
                 </div>

@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await authApi.login(authRequest);
             localStorage.setItem(AUTH_KEY, JSON.stringify(response.data));
-            setUser(response.data);
+            setUser(response.data as IAuthResponse);
             return { success: true };
         } catch (error) {
             if (error instanceof ApiClientError && error?.status === 401) {

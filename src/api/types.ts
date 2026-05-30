@@ -6,7 +6,7 @@ export interface IPaginatedResponse<T> {
         total_page: number;
         total: number;
         page: number;
-        per_size: number;
+        per_page: number;
     };
     success: boolean;
     version: string;
@@ -15,7 +15,7 @@ export interface IPaginatedResponse<T> {
 export interface ISingleResponse<T> {
     status_code: number;
     message: string;
-    data: T;
+    data?: T;
     success: boolean;
     version: string;
 }

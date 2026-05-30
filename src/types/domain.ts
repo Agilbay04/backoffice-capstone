@@ -1,5 +1,5 @@
 // === Types ===
-export type TUserRole = 'admin' | 'operator' | 'manager';
+export type TUserRole = 'super-admin' | 'admin' | 'operator' | 'manager';
 export type TUserStatus = 'active' | 'inactive';
 export type TRequestStatus = 'pending' | 'approved' | 'rejected';
 export type TRequestPriority = 'low' | 'medium' | 'high' | 'critical';
@@ -7,7 +7,7 @@ export type TRequestPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TBaseParams = {
     search?: string;
     page: number;
-    pageSize: number;
+    perPage: number;
 };
 
 
@@ -24,6 +24,7 @@ export interface IUser {
 
 export interface IRole {
     id: string;
+    code: string;
     name: string;
 }
 

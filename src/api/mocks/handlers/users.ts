@@ -10,13 +10,13 @@ export const usersHandlers = [
 
     const errorScenario = url.searchParams.get('__error');
     if (errorScenario === '401') {
-      return HttpResponse.json(apiResponse('Session expired', { status_code: 401, code: 'AUTH_EXPIRED', success: false }), { status: 401 });
+      return HttpResponse.json(apiResponse('Session expired', { status_code: 401, success: false }), { status: 401 });
     }
     if (errorScenario === '403') {
-      return HttpResponse.json(apiResponse('Insufficient permissions', { status_code: 403, code: 'FORBIDDEN', success: false }), { status: 403 });
+      return HttpResponse.json(apiResponse('Insufficient permissions', { status_code: 403, success: false }), { status: 403 });
     }
     if (errorScenario === '500') {
-      return HttpResponse.json(apiResponse('Internal server error', { status_code: 500, code: 'SERVER_ERROR', success: false }), { status: 500 });
+      return HttpResponse.json(apiResponse('Internal server error', { status_code: 500, success: false }), { status: 500 });
     }
     if (errorScenario === 'empty') {
       return HttpResponse.json(paginated([], 0, 1, 10));
@@ -52,7 +52,7 @@ export const usersHandlers = [
     await delay(300);
     const user = MOCK_USERS.find((u) => u.id === params.id);
     if (!user) {
-      return HttpResponse.json(apiResponse('User not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('User not found', { status_code: 404, success: false }), { status: 404 });
     }
     return HttpResponse.json(apiResponse('Success get user.', { data: omit(user, 'password') }));
   }),
@@ -78,7 +78,7 @@ export const usersHandlers = [
     const body = (await request.json()) as Partial<IUser>;
     const index = MOCK_USERS.findIndex((u) => u.id === params.id);
     if (index === -1) {
-      return HttpResponse.json(apiResponse('User not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('User not found', { status_code: 404, success: false }), { status: 404 });
     }
     MOCK_USERS[index] = { ...MOCK_USERS[index], ...body };
     return HttpResponse.json(apiResponse('Success update data.', { data: omit(MOCK_USERS[index], 'password') }));
@@ -88,7 +88,7 @@ export const usersHandlers = [
     await delay(400);
     const index = MOCK_USERS.findIndex((u) => u.id === params.id);
     if (index === -1) {
-      return HttpResponse.json(apiResponse('User not found', { status_code: 404, code: 'NOT_FOUND', success: false }), { status: 404 });
+      return HttpResponse.json(apiResponse('User not found', { status_code: 404, success: false }), { status: 404 });
     }
     MOCK_USERS.splice(index, 1);
     return HttpResponse.json(apiResponse('Success delete data.'));

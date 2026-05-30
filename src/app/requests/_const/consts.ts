@@ -5,5 +5,5 @@ export const REQUEST_PARAMS_DEFAULT: TRequestParams = {
     status: 'all',
     priority: 'all',
     page: 1,
-    pageSize: 10,
+    perPage: 10,
 };
