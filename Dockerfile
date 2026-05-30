@@ -19,7 +19,7 @@ COPY . .
 RUN pnpm build
 
 # Stage 2: Install NGINX
-FROM nginx:1.26.2-alpine3.18
+FROM nginx:1.31.1-alpine
 
 # Copy project build to nginx
 COPY --from=fe-builder /app/dist /usr/share/nginx/html
