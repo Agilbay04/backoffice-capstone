@@ -71,7 +71,7 @@ const router = createBrowserRouter([
 ]);
 
 async function startApp() {
-  if (import.meta.env.DEV) {
+  if (import.meta.env.VITE_ENABLE_MSW === 'true') {
     const { worker } = await import('./api/mocks/browser');
     await worker.start({
       onUnhandledRequest: 'bypass',
