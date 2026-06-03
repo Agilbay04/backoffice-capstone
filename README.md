@@ -238,3 +238,46 @@ Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan 
   - Replace `useState` + `useEffect` + `auditLogsApi.getById()` → `useAuditLog(id)`
   - Loading state via `isLoading`, error state via `error`
 - **Optimasi Loading & Error State**: Semua modul (Users, Requests, AuditLogs) kini memanfaatkan properti bawaan TanStack Query (`isPending`, `isError`, `error`) menggantikan `useState` manual untuk loading/error state, termasuk pada komponen table (`UserTable`, `RequestTable`) yang menerima prop `isDeleting` dari parent mutation.
+
+### 25 Mei, Senin: TanStack Table, URL State, dan Pagination
+
+Hari ketujuh implementasi TanStack Table untuk sorting tabel, migrasi filter state ke URL search params, dan penambahan pagination component dengan per page selector.
+
+**Aktivitas:**
+
+- **Install Dependensi**: Menambahkan `@tanstack/react-table` v8.21.3 ke package.json.
+- **Shared Pagination Component** (`src/app/_components/ui/pagination.tsx`):
+  - Tombol Previous / Next dengan disabled state
+  - Nomor halaman dengan ellipsis untuk navigasi banyak halaman
+  - Dropdown "Rows per page" dengan opsi 5, 10, 25, 50
+  - Informasi "Page X of Y (Z total)"
+  - Hanya muncul saat ada data (`total > 0`)
+- **UserTable Migrasi** (`src/app/users/_components/user-table.tsx`):
+  - Column definitions dengan accessor `name`, `email`, `role`, `status`
+  - Sorting via `getSortedRowModel()` — klik header untuk sort asc/desc
+  - Icons `ArrowUpDown`/`ArrowUp`/`ArrowDown` sebagai indikator sorting
+  - Delete confirmation dialog tetap dipertahankan
+- **RequestTable Migrasi** (`src/app/requests/_components/request-table.tsx`):
+  - Column definitions: `title`, `status`, `priority`, `requestedBy`, `assignee`, `createdAt`
+  - Sorting dan action column (Edit/Delete) dengan confirm dialog
+- **AuditLogTable Migrasi** (`src/app/audit-logs/_components/audit-log-table.tsx`):
+  - Column definitions: `actor`, `action`, `target`, `details`, `timestamp`
+  - Sorting, row click navigasi ke detail
+- **URL State Migration** (`src/app/users/page.tsx`, `src/app/requests/page.tsx`, `src/app/audit-logs/page.tsx`):
+  - Replace `useState<TParams>(DEFAULT)` dengan `useSearchParams()` dari React Router
+  - Filter (`search`, `role`, `status`, `priority`, `page`, `perPage`) dibaca/tulis dari URL
+  - Setiap perubahan filter → update URL + reset `page=1`
+  - Setiap perubahan halaman → update `page` di URL
+  - URL dapat disalin dan mempertahankan state (shareable)
+- **Fix Pagination MSW Handler** (`src/api/mocks/handlers/users.ts`, `requests.ts`, `audit-logs.ts`):
+  - Bug: Data difilter tapi tidak di-slice per halaman — semua data selalu dikirim
+  - Fix: Tambah `.slice((page - 1) * perPage, page * perPage)` sebelum `paginated()`
+  - Pagination server-side berfungsi sesuai page dan perPage yang dikirim
+- **Catatan**: Sorting bersifat client-side (data sudah difetch, di-sort di browser).
+
+Contoh URL setelah migrasi:
+```
+/users?search=john&role=admin&status=active&page=2&perPage=10
+/requests?status=pending&priority=high&page=1
+/audit-logs?search=login&page=1
+```

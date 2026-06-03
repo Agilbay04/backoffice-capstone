@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import type { TUserParams } from '@/app/users/_types/types';
-import { USER_PARAMS_DEFAULT } from '@/app/users/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import DropdownInput from '@/app/_components/dropdown-input';
 import { MOCK_ROLES } from '@/app/users/_mocks/roles';
@@ -18,37 +18,63 @@ import type { IDropdownOption, IUser } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
+import { Pagination } from '@/app/_components/ui/pagination';
 import { useUserListQuery } from '@/app/users/_hooks/use-user-list-query';
 import { useCreateUserMutation } from '@/app/users/_hooks/use-create-user-mutation';
 import { useDeleteUserMutation } from './_hooks/use-delete-user-mutation';
 
 export default function UsersPage() {
-  const [filters, setFilters] = useState<TUserParams>(USER_PARAMS_DEFAULT);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const filters: TUserParams = {
+    search: searchParams.get('search') || '',
+    role: searchParams.get('role') || '',
+    status: searchParams.get('status') || '',
+    page: Number(searchParams.get('page')) || 1,
+    perPage: Number(searchParams.get('perPage')) || 10,
+  };
 
   const { data, isLoading, error, refetch } = useUserListQuery(filters);
   const createMutation = useCreateUserMutation();
   const deleteMutation = useDeleteUserMutation();
 
-  const handleFilterChange = useCallback((key: keyof TUserParams, value: string | number) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-      page: 1
-    }));
-  }, []);
+  const updateParams = useCallback((key: string, value: string | number) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (value) {
+        next.set(key, String(value));
+      } else {
+        next.delete(key);
+      }
+      next.set('page', '1');
+      return next;
+    });
+  }, [setSearchParams]);
 
-  const handleCreateUser =  async (formData: Partial<IUser>) => {
+  const handleFilterChange = useCallback((key: keyof TUserParams, value: string | number) => {
+    updateParams(key, value);
+  }, [updateParams]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set('page', String(page));
+      return next;
+    });
+  }, [setSearchParams]);
+
+  const handleCreateUser = async (formData: Partial<IUser>) => {
     try {
-        await createMutation.mutateAsync(formData);
-        return { success: true };
+      await createMutation.mutateAsync(formData);
+      return { success: true };
     } catch (err) {
-        return {
-            success: false,
-            error: err instanceof ApiClientError ? err.message : 'Failed to create user.',
-        };
+      return {
+        success: false,
+        error: err instanceof ApiClientError ? err.message : 'Failed to create user.',
+      };
     }
-};
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -66,27 +92,29 @@ export default function UsersPage() {
       return (
         <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
           <span className="text-sm font-medium text-red-600">{error?.message}</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-          >
-            Retry
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
         </div>
       );
     }
 
     return (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <UserTable 
-          data={data?.items ?? []} 
-          onDelete={async (id) => { await deleteMutation.mutateAsync(id); }} 
+        <UserTable
+          data={data?.items ?? []}
+          onDelete={async (id) => { await deleteMutation.mutateAsync(id); }}
           isDeleting={deleteMutation.isPending}
+        />
+        <Pagination
+          page={data?.meta?.page ?? 1}
+          totalPages={data?.meta?.total_page ?? 1}
+          total={data?.meta?.total ?? 0}
+          perPage={filters.perPage}
+          onPageChange={handlePageChange}
+          onPerPageChange={(size) => updateParams('perPage', size)}
         />
       </div>
     );
-  }
+  };
 
   return (
     <main className="space-y-6">
@@ -130,7 +158,6 @@ export default function UsersPage() {
         </div>
       </section>
 
-      {/* Content */}
       {renderContent()}
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -156,7 +183,6 @@ export default function UsersPage() {
 
 function roleOptions(): IDropdownOption[] {
   if (MOCK_ROLES?.length === 0) return [];
-
   return MOCK_ROLES?.map((role) => ({
     key: role?.code,
     value: role?.code

@@ -45,7 +45,9 @@ export const usersHandlers = [
     }
 
     const safeUsers = filtered.map((user) => omit(user, 'password'));
-    return HttpResponse.json(paginated(safeUsers, safeUsers.length, page, perPage));
+    const start = (page - 1) * perPage;
+    const sliced = safeUsers.slice(start, start + perPage);
+    return HttpResponse.json(paginated(sliced, safeUsers.length, page, perPage));
   }),
 
   http.get('/api/users/:id', async ({ params }) => {

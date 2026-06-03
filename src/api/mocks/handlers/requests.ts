@@ -45,7 +45,9 @@ export const requestsHandlers = [
       filtered = filtered.filter((r) => r.priority === priority);
     }
 
-    return HttpResponse.json(paginated(filtered, filtered.length, page, perPage));
+    const start = (page - 1) * perPage;
+    const sliced = filtered.slice(start, start + perPage);
+    return HttpResponse.json(paginated(sliced, filtered.length, page, perPage));
   }),
 
   http.get('/api/requests/:id', async ({ params }) => {

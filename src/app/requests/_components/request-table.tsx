@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  flexRender,
+  type SortingState,
+  type ColumnDef,
+} from '@tanstack/react-table';
 import RequestStatusBadge from '@/app/requests/_components/request-status-badge';
 import {
   Table,
@@ -21,6 +29,7 @@ import {
   DialogFooter,
 } from '@/app/_components/ui/dialog';
 import type { IRequest } from '@/types/domain';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface IRequestTableProps {
   data: IRequest[];
@@ -29,120 +38,217 @@ interface IRequestTableProps {
 }
 
 const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' | 'outline'> = {
-    critical: 'destructive',
-    high: 'default',
-    medium: 'secondary',
-    low: 'outline',
+  critical: 'destructive',
+  high: 'default',
+  medium: 'secondary',
+  low: 'outline',
 };
 
 function RequestTable({ data, onDelete, isDeleting }: IRequestTableProps) {
-    const navigate = useNavigate();
-    const [deleteId, setDeleteId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
-    const handleDelete = async () => {
-        if (!deleteId) return;
-        await onDelete(deleteId);
-        setDeleteId(null);
-    };
+  const columns = useMemo<ColumnDef<IRequest>[]>(() => [
+    {
+      accessorKey: 'title',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Title
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+      cell: ({ row }) => (
+        <button
+          className="hover:underline text-left font-medium text-slate-900"
+          onClick={() => navigate(`/requests/${row.original.id}`)}
+        >
+          {row.original.title}
+        </button>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Status
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+      cell: ({ row }) => <RequestStatusBadge status={row.original.status} />,
+    },
+    {
+      accessorKey: 'priority',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Priority
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+      cell: ({ row }) => (
+        <Badge
+          variant={PRIORITY_VARIANT[row.original.priority] ?? 'secondary'}
+          className="capitalize px-2.5 py-0.5 tracking-wide font-semibold rounded-full"
+        >
+          {row.original.priority}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'requestedBy',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Requested By
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+    },
+    {
+      accessorKey: 'assignee',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Assignee
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+      cell: ({ row }) => row.original.assignee ?? '\u2014',
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => (
+        <button
+          className="flex items-center gap-1 hover:text-slate-900"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Created At
+          {column.getIsSorted() === 'asc' ? <ArrowUp className="h-3 w-3" /> :
+            column.getIsSorted() === 'desc' ? <ArrowDown className="h-3 w-3" /> :
+            <ArrowUpDown className="h-3 w-3 text-slate-300" />}
+        </button>
+      ),
+      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => navigate(`/requests/${row.original.id}`)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="xs"
+            onClick={() => setDeleteId(row.original.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ], [navigate]);
 
-    return (
-        <>
-            <div className="w-full rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-slate-50">
-                        <TableRow>
-                            <TableHead className="w-[20%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Title</TableHead>
-                            <TableHead className="w-[12%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
-                            <TableHead className="w-[10%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Priority</TableHead>
-                            <TableHead className="w-[15%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Requested By</TableHead>
-                            <TableHead className="w-[13%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Assignee</TableHead>
-                            <TableHead className="w-[12%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Created At</TableHead>
-                            <TableHead className="w-[18%] px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data?.length > 0 ? (
-                            data?.map((request) => (
-                                <TableRow key={request?.id} className="hover:bg-slate-50/70 transition-colors">
-                                    <TableCell className="px-6 py-4 text-sm font-medium text-slate-900 whitespace-nowrap">
-                                        <button
-                                            className="hover:underline text-left"
-                                            onClick={() => navigate(`/requests/${request?.id}`)}
-                                        >
-                                            {request?.title}
-                                        </button>
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
-                                        <RequestStatusBadge status={request?.status} />
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
-                                        <Badge
-                                            variant={PRIORITY_VARIANT[request?.priority] ?? 'secondary'}
-                                            className="capitalize px-2.5 py-0.5 tracking-wide font-semibold rounded-full"
-                                        >
-                                            {request?.priority}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                                        {request?.requestedBy}
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                                        {request?.assignee ?? '—'}
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-slate-400 whitespace-nowrap">
-                                        {new Date(request?.createdAt).toLocaleDateString()}
-                                    </TableCell>
-                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="xs"
-                                                onClick={() => navigate(`/requests/${request?.id}`)}
-                                            >
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="xs"
-                                                onClick={() => setDeleteId(request?.id)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-32 text-center text-sm font-medium text-slate-400">
-                                    No requests found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+  const table = useReactTable({
+    data,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
-            <Dialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Request</DialogTitle>
-                        <DialogDescription>Are you sure? This action cannot be undone.</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>
-                            Cancel
-                        </Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                            {isDeleting ? (
-                                <span className="flex items-center gap-2"><Spinner /> Deleting...</span>
-                            ) : 'Delete'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
-    );
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    await onDelete(deleteId);
+    setDeleteId(null);
+  };
+
+  return (
+    <>
+      <div className="w-full rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <Table>
+          <TableHeader className="bg-slate-50">
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <TableHead key={header.id} className="px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map(row => (
+                <TableRow key={row.id} className="hover:bg-slate-50/70 transition-colors">
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id} className="px-6 py-4 text-sm whitespace-nowrap">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-32 text-center text-sm font-medium text-slate-400">
+                  No requests found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Request</DialogTitle>
+            <DialogDescription>Are you sure? This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteId(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? (
+                <span className="flex items-center gap-2"><Spinner /> Deleting...</span>
+              ) : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 export default React.memo(RequestTable);

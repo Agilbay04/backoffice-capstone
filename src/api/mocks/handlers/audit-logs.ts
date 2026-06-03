@@ -33,7 +33,9 @@ export const auditLogsHandlers = [
       );
     }
 
-    return HttpResponse.json(paginated(filtered, filtered.length, page, perPage));
+    const start = (page - 1) * perPage;
+    const sliced = filtered.slice(start, start + perPage);
+    return HttpResponse.json(paginated(sliced, filtered.length, page, perPage));
   }),
 
   http.get('/api/audit-logs/:id', async ({ params }) => {
