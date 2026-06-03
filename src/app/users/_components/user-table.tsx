@@ -21,26 +21,20 @@ import {
   DialogFooter,
 } from '@/app/_components/ui/dialog';
 
-interface UserTableProps {
+interface IUserTableProps {
   data: IUser[];
   onDelete: (id: string) => Promise<void>;
+  isDeleting?: boolean;
 }
 
-function UserTable({ data, onDelete }: UserTableProps) {
+function UserTable({ data, onDelete, isDeleting }: IUserTableProps) {
     const navigate = useNavigate();
     const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = async () => {
         if (!deleteId) return;
-        setIsDeleting(true);
-
-        try {
-            await onDelete(deleteId);
-            setDeleteId(null);
-        } finally {
-            setIsDeleting(false);
-        }
+        await onDelete(deleteId);
+        setDeleteId(null);
     };
 
     return (

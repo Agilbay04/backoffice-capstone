@@ -5,7 +5,7 @@ import type { TUserParams } from "@/app/users/_types/types";
 import type { IPaginatedResponse } from "@/api/types";
 import type { IUser } from "@/types/domain";
 
-export function useUserList(params: Partial<TUserParams>) {
+export function useUserListQuery(params: Partial<TUserParams>) {
     return useQuery<IPaginatedResponse<IUser>>({
         queryKey: queryKeys.users.list(params as Record<string, unknown>),
         queryFn: () => usersApi.list(params),

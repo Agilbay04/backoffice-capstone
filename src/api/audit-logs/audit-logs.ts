@@ -4,7 +4,7 @@ import type { IPaginatedResponse, ISingleResponse } from '@/api/types';
 import type { TAuditLogParams } from '@/app/audit-logs/_types/types';
 
 export const auditLogsApi = {
-  list: (params?: TAuditLogParams) => {
+  list: (params?: Partial<TAuditLogParams>) => {
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set('search', params.search);
     if (params?.page) searchParams.set('page', String(params.page));

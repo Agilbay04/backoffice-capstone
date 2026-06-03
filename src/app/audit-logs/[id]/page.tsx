@@ -1,48 +1,14 @@
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { auditLogsApi } from '@/api/audit-logs/audit-logs';
+import { useAuditLogQuery } from '@/app/audit-logs/_hooks/use-audit-log-query';
 import { Badge } from '@/app/_components/ui/badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
-import { ApiClientError } from '@/api/client';
-import type { IAuditLog } from '@/types/domain';
 
 export default function AuditLogDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [log, setLog] = useState<IAuditLog | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!id) return;
-
-        let cancelled = false;
-
-        const fetchLog = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await auditLogsApi.getById(id);
-                if (!cancelled) setLog(response.data as IAuditLog);
-            } catch (err) {
-                if (!cancelled) {
-                    if (err instanceof ApiClientError) {
-                        setError(err.message);
-                    } else {
-                        setError('Failed to load audit log.');
-                    }
-                }
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        };
-
-        fetchLog();
-        return () => { cancelled = true; };
-    }, [id]);
+    const { data, isLoading, error } = useAuditLogQuery(id!);
 
     if (isLoading) {
         return (
@@ -55,16 +21,18 @@ export default function AuditLogDetailPage() {
         );
     }
 
-    if (error || !log) {
+    if (error || !data?.data) {
         return (
             <main className="space-y-6">
                 <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error ?? 'Audit log not found.'}</span>
+                    <span className="text-sm font-medium text-red-600">{error?.message ?? 'Audit log not found.'}</span>
                     <Button variant="outline" size="sm" onClick={() => navigate('/audit-logs')}>Back to Audit Logs</Button>
                 </div>
             </main>
         );
     }
+
+    const log = data.data;
 
     return (
         <main className="space-y-6">

@@ -1,56 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import type { TAuditLogParams } from '@/app/audit-logs/_types/types';
 import { AUDIT_LOG_PARAMS_DEFAULT } from '@/app/audit-logs/_const/consts';
 import SearchInput from '@/app/_components/search-input';
-import { auditLogsApi } from '@/api/audit-logs/audit-logs';
+import { useAuditLogListQuery } from '@/app/audit-logs/_hooks/use-audit-log-list-query';
 import AuditLogTable from '@/app/audit-logs/_components/audit-log-table';
-import type { IAuditLog } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
-import { ApiClientError } from '@/api/client';
 
 export default function AuditLogsPage() {
     const [filters, setFilters] = useState<TAuditLogParams>(AUDIT_LOG_PARAMS_DEFAULT);
-
-    const [logs, setLogs] = useState<IAuditLog[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data, isLoading, error, refetch } = useAuditLogListQuery(filters);
 
     const handleFilterChange = useCallback((key: keyof TAuditLogParams, value: string | number) => {
         setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
     }, []);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        const fetchLogs = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await auditLogsApi.list({
-                    search: filters.search,
-                    page: filters.page,
-                    perPage: filters.perPage,
-                });
-                if (!cancelled) setLogs(response.items);
-            } catch (err) {
-                if (!cancelled) {
-                    if (err instanceof ApiClientError) {
-                        setError(err.message);
-                    } else {
-                        setError('Failed to load audit logs. Please try again.');
-                    }
-                    if (!cancelled) setLogs([]);
-                }
-            } finally {
-                if (!cancelled) setIsLoading(false);
-            }
-        };
-
-        fetchLogs();
-        return () => { cancelled = true; };
-    }, [filters]);
 
     const renderContent = () => {
         if (isLoading) {
@@ -65,15 +28,15 @@ export default function AuditLogsPage() {
         if (error) {
             return (
                 <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error}</span>
-                    <Button variant="outline" size="sm" onClick={() => setFilters((prev) => ({ ...prev }))}>Retry</Button>
+                    <span className="text-sm font-medium text-red-600">{error.message}</span>
+                    <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
                 </div>
             );
         }
 
         return (
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                <AuditLogTable data={logs} />
+                <AuditLogTable data={data?.items ?? []} />
             </div>
         );
     };
@@ -97,7 +60,6 @@ export default function AuditLogsPage() {
                 </div>
             </section>
             
-            {/* Content */}
             {renderContent()}
 
         </main>

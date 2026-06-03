@@ -17,18 +17,18 @@ import {
 import type { IDropdownOption, IUser } from '@/types/domain';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
-import { useUserList } from '@/app/users/_hooks/use-user-list';
-import { useCreateUser } from '@/app/users/_hooks/use-create-user';
 import { ApiClientError } from '@/api/client';
-import { useDeleteUser } from './_hooks/use-delete-user';
+import { useUserListQuery } from '@/app/users/_hooks/use-user-list-query';
+import { useCreateUserMutation } from '@/app/users/_hooks/use-create-user-mutation';
+import { useDeleteUserMutation } from './_hooks/use-delete-user-mutation';
 
 export default function UsersPage() {
   const [filters, setFilters] = useState<TUserParams>(USER_PARAMS_DEFAULT);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const { data, isLoading, error, refetch } = useUserList(filters);
-  const createMutation = useCreateUser();
-  const deleteMutation = useDeleteUser();
+  const { data, isLoading, error, refetch } = useUserListQuery(filters);
+  const createMutation = useCreateUserMutation();
+  const deleteMutation = useDeleteUserMutation();
 
   const handleFilterChange = useCallback((key: keyof TUserParams, value: string | number) => {
     setFilters((prev) => ({
@@ -82,6 +82,7 @@ export default function UsersPage() {
         <UserTable 
           data={data?.items ?? []} 
           onDelete={async (id) => { await deleteMutation.mutateAsync(id); }} 
+          isDeleting={deleteMutation.isPending}
         />
       </div>
     );
@@ -158,6 +159,6 @@ function roleOptions(): IDropdownOption[] {
 
   return MOCK_ROLES?.map((role) => ({
     key: role?.code,
-    value: role?.name
+    value: role?.code
   }));
 };

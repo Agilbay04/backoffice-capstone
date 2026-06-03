@@ -17,18 +17,18 @@ import {
 } from '@/app/_components/ui/dialog';
 import { MOCK_STATUSES } from './_mocks/statuses';
 import { MOCK_PRIORITIES } from './_mocks/priorities';
-import { useRequestList } from './_hooks/use-request-list';
-import { useCreateRequest } from './_hooks/use-create-request';
-import { useDeleteRequest } from './_hooks/use-delete-request';
+import { useRequestListQuery } from './_hooks/use-request-list-query';
+import { useCreateRequestMutation } from './_hooks/use-create-request-mutation';
+import { useDeleteRequestMutation } from './_hooks/use-delete-request-mutation';
 import type { IRequest } from '@/types/domain';
 
 export default function RequestsPage() {
     const [filters, setFilters] = useState<TRequestParams>(REQUEST_PARAMS_DEFAULT);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    const { data, isLoading, error, refetch } = useRequestList(filters);
-    const createMutation = useCreateRequest();
-    const deleteMutation = useDeleteRequest();
+    const { data, isLoading, error, refetch } = useRequestListQuery(filters);
+    const createMutation = useCreateRequestMutation();
+    const deleteMutation = useDeleteRequestMutation();
 
     const handleFilterChange = useCallback((key: keyof TRequestParams, value: string | number) => {
         setFilters((prev) => ({
@@ -80,6 +80,7 @@ export default function RequestsPage() {
                 <RequestTable 
                     data={data?.items ?? []} 
                     onDelete={async (id) => { await deleteMutation.mutateAsync(id); }} 
+                    isDeleting={deleteMutation.isPending}
                 />
             </div>
         );

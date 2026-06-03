@@ -3,7 +3,7 @@ import { usersApi } from '@/api/users/users';
 import { queryKeys } from '@/api/query-keys';
 import type { ApiClientError } from '@/api/client';
 
-export function useCreateUser() {
+export function useCreateUserMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({

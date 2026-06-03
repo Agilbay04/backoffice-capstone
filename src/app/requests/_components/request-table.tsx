@@ -22,9 +22,10 @@ import {
 } from '@/app/_components/ui/dialog';
 import type { IRequest } from '@/types/domain';
 
-interface RequestTableProps {
+interface IRequestTableProps {
   data: IRequest[];
   onDelete: (id: string) => Promise<void>;
+  isDeleting?: boolean;
 }
 
 const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' | 'outline'> = {
@@ -34,20 +35,14 @@ const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' |
     low: 'outline',
 };
 
-function RequestTable({ data, onDelete }: RequestTableProps) {
+function RequestTable({ data, onDelete, isDeleting }: IRequestTableProps) {
     const navigate = useNavigate();
     const [deleteId, setDeleteId] = useState<string | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = async () => {
         if (!deleteId) return;
-        setIsDeleting(true);
-        try {
-            await onDelete(deleteId);
-            setDeleteId(null);
-        } finally {
-            setIsDeleting(false);
-        }
+        await onDelete(deleteId);
+        setDeleteId(null);
     };
 
     return (

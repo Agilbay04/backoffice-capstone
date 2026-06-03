@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUser } from '@/app/users/_hooks/use-user';
-import { useUpdateUser } from '@/app/users/_hooks/use-update-user';
-import { useDeleteUser } from '@/app/users/_hooks/use-delete-user';
+import { useUserQuery } from '@/app/users/_hooks/use-user-query';
+import { useUpdateUserMutation } from '@/app/users/_hooks/use-update-user-mutation';
+import { useDeleteUserMutation } from '@/app/users/_hooks/use-delete-user-mutation';
 import StatusBadge from '@/app/_components/status-badge';
 import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
@@ -21,13 +21,11 @@ export default function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useUser(id!);
-  const updateMutation = useUpdateUser();
-  const deleteMutation = useDeleteUser();
+  const { data, isLoading, error } = useUserQuery(id!);
+  const updateMutation = useUpdateUserMutation();
+  const deleteMutation = useDeleteUserMutation();
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleEdit = async (formData: Partial<IUser>) => {
     if (!id) return { success: false };
@@ -44,18 +42,11 @@ export default function UserDetailPage() {
 
   const handleDelete = async () => {
     if (!id) return;
-    setIsDeleting(true);
-    setDeleteError(null);
-
     try {
       await deleteMutation.mutateAsync(id);
       navigate('/users', { replace: true });
-    } catch (err) {
-      setDeleteError(
-        err instanceof ApiClientError ? err.message : 'Failed to delete user.'
-      );
-    } finally {
-      setIsDeleting(false);
+    } catch {
+      // Error state otomatis dikelola oleh deleteMutation.error
     }
   };
 
@@ -106,16 +97,18 @@ export default function UserDetailPage() {
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={isDeleting}
+            disabled={deleteMutation.isPending}
           >
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </div>
 
-      {deleteError && (
+      {deleteMutation.isError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {deleteError}
+          {deleteMutation.error instanceof ApiClientError
+            ? deleteMutation.error.message
+            : 'Failed to delete user.'}
         </div>
       )}
 

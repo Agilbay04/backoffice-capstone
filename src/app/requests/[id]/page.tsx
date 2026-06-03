@@ -21,10 +21,10 @@ import {
 import { ApiClientError } from '@/api/client';
 import type { IRequest } from '@/types/domain';
 import { MOCK_STATUSES } from '../_mocks/statuses';
-import { useRequest } from '../_hooks/use-request';
-import { useUpdateRequest } from '../_hooks/use-update-request';
-import { useDeleteRequest } from '../_hooks/use-delete-request';
-import { useUpdateRequestStatus } from '../_hooks/use-update-request-status';
+import { useRequestQuery } from '../_hooks/use-request-query';
+import { useUpdateRequestMutation } from '../_hooks/use-update-request-mutation';
+import { useDeleteRequestMutation } from '../_hooks/use-delete-request-mutation';
+import { useUpdateRequestStatusMutation } from '../_hooks/use-update-request-status-mutation';
 import RequestForm from '../_components/request-form';
 
 const PRIORITY_VARIANT: Record<string, 'destructive' | 'default' | 'secondary' | 'outline'> = {
@@ -38,18 +38,14 @@ export default function RequestDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const { data, isLoading, error } = useRequest(id!);
-    const updateMutation = useUpdateRequest();
-    const deleteMutation = useDeleteRequest();
-    const statusMutation = useUpdateRequestStatus();
+    const { data, isLoading, error } = useRequestQuery(id!);
+    const updateMutation = useUpdateRequestMutation();
+    const deleteMutation = useDeleteRequestMutation();
+    const statusMutation = useUpdateRequestStatusMutation();
 
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const [selectedStatus, setSelectedStatus] = useState<string>('');
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [updateError, setUpdateError] = useState<string | null>(null);
 
     const handleEdit = async (formData: Partial<IRequest>) => {
         if (!id) return { success: false };
@@ -66,30 +62,16 @@ export default function RequestDetailPage() {
 
     const handleStatusUpdate = async () => {
         if (!id || !selectedStatus || selectedStatus === data?.data?.status) return;
-        setIsUpdating(true);
-        setUpdateError(null);
-        try {
-            await statusMutation.mutateAsync({ id, status: selectedStatus });
-        } catch (err) {
-            setUpdateError(err instanceof ApiClientError ? err.message : 'Failed to update status.');
-        } finally {
-            setIsUpdating(false);
-        }
+        await statusMutation.mutateAsync({ id, status: selectedStatus });
     };
 
     const handleDelete = async () => {
         if (!id) return;
-        setIsDeleting(true);
-        setDeleteError(null);
         try {
             await deleteMutation.mutateAsync(id);
             navigate('/requests', { replace: true });
-        } catch (err) {
-            setDeleteError(
-                err instanceof ApiClientError ? err.message : 'Failed to delete request.'
-            );
-        } finally {
-            setIsDeleting(false);
+        } catch {
+            // Already handled by mutation error state
         }
     };
 
@@ -132,15 +114,19 @@ export default function RequestDetailPage() {
                     <Button
                         variant="destructive"
                         onClick={handleDelete}
-                        disabled={isDeleting}
+                        disabled={deleteMutation.isPending}
                     >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
+                        {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
                     </Button>
                 </div>
             </div>
 
-            {deleteError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{deleteError}</div>
+            {deleteMutation.isError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {deleteMutation.error instanceof ApiClientError
+                        ? deleteMutation.error.message
+                        : 'Failed to delete request.'}
+                </div>
             )}
 
             <div className="grid grid-cols-2 gap-6">
@@ -190,11 +176,15 @@ export default function RequestDetailPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        {updateError && (
-                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{updateError}</div>
+                        {statusMutation.isError && (
+                            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {statusMutation.error instanceof ApiClientError
+                                    ? statusMutation.error.message
+                                    : 'Failed to update status.'}
+                            </div>
                         )}
-                        <Button className="bg-slate-900" onClick={handleStatusUpdate} disabled={isUpdating || selectedStatus === request.status}>
-                            {isUpdating ? <span className="flex items-center gap-2"><Spinner /> Updating...</span> : 'Update Status'}
+                        <Button className="bg-slate-900" onClick={handleStatusUpdate} disabled={statusMutation.isPending || selectedStatus === request.status}>
+                            {statusMutation.isPending ? <span className="flex items-center gap-2"><Spinner /> Updating...</span> : 'Update Status'}
                         </Button>
                     </div>
                 </div>

@@ -1,17 +1,18 @@
+import type { ApiClientError } from "@/api/client";
 import { queryKeys } from "@/api/query-keys";
 import { requestsApi } from "@/api/requests/requests";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useUpdateRequest() {
+export function useCreateRequestMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({id, data}: { id: string; data: Parameters<typeof requestsApi.update>[1] }) => 
-            requestsApi.update(id, data),
-        onSuccess: (_data, variables) => {
+        mutationFn: (data: Parameters<typeof requestsApi.create>[0]) => requestsApi.create(data),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.requests.all });
-
-            queryClient.invalidateQueries({ queryKey: queryKeys.requests.detail(variables.id) });
+        },
+        onError: (error: ApiClientError) => {
+            return error;
         },
     });
 };
