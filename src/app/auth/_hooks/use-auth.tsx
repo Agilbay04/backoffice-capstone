@@ -4,7 +4,7 @@ import type { IAuthRequest, IAuthResponse } from "@/types/domain";
 import { authApi } from "@/api/auth/auth";
 import { ApiClientError } from "@/api/client";
 
-interface AuthContextType {
+interface IAuthContextType {
     user: IAuthResponse | null;
     isAuthenticated: boolean;
     login: (authRequest: IAuthRequest) => Promise<{ 
@@ -14,9 +14,9 @@ interface AuthContextType {
     logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<IAuthContextType | null>(null);
 
-const AUTH_KEY = "auth_user";
+const AUTH_KEY = import.meta.env.VITE_AUTH_KEY || "auth_user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<IAuthResponse | null>(() => {
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 }
 
-export function useAuth(): AuthContextType {
+export function useAuth(): IAuthContextType {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error("useAuth must be used within an AuthProvider");

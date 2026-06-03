@@ -65,7 +65,7 @@ function RequestTable({ data, onDelete, isDeleting }: IRequestTableProps) {
       ),
       cell: ({ row }) => (
         <button
-          className="hover:underline text-left font-medium text-slate-900"
+          className="hover:underline text-left font-medium text-slate-900 cursor-pointer"
           onClick={() => navigate(`/requests/${row.original.id}`)}
         >
           {row.original.title}
@@ -210,7 +210,7 @@ function RequestTable({ data, onDelete, isDeleting }: IRequestTableProps) {
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} className="hover:bg-slate-50/70 transition-colors">
+                <TableRow key={row.id} className="hover:bg-slate-50/70 transition-colors cursor-pointer">
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id} className="px-6 py-4 text-sm whitespace-nowrap">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
