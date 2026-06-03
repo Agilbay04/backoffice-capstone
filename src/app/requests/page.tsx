@@ -10,6 +10,8 @@ import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
 import { Pagination } from '@/app/_components/ui/pagination';
+import { ErrorState } from '@/app/_components/error-state';
+import { EmptyState } from '@/app/_components/empty-state';
 import {
   Dialog,
   DialogContent,
@@ -88,18 +90,17 @@ export default function RequestsPage() {
     }
 
     if (error) {
-      return (
-        <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <span className="text-sm font-medium text-red-600">{error?.message}</span>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
-        </div>
-      );
+      return <ErrorState message={error?.message} onRetry={() => refetch()} />;
+    }
+
+    if (!data?.items || data.items.length === 0) {
+      return <EmptyState message="No requests found." />;
     }
 
     return (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <RequestTable
-          data={data?.items ?? []}
+          data={data.items}
           onDelete={async (id) => { await deleteMutation.mutateAsync(id); }}
           isDeleting={deleteMutation.isPending}
         />

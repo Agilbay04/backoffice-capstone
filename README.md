@@ -276,8 +276,42 @@ Hari ketujuh implementasi TanStack Table untuk sorting tabel, migrasi filter sta
 - **Catatan**: Sorting bersifat client-side (data sudah difetch, di-sort di browser).
 
 Contoh URL setelah migrasi:
-```
+
+```bash
 /users?search=john&role=admin&status=active&page=2&perPage=10
 /requests?status=pending&priority=high&page=1
 /audit-logs?search=login&page=1
 ```
+
+### 26 Mei, Selasa: Real API Readiness, Error States, dan Finalisasi
+
+Hari kedelapan implementasi environment switching antara MSW dan real API, global error handling (401 auto-logout, 403 forbidden), membuat dashboard page dan kontennya, dan membuat reusable error/empty state components.
+
+**Aktivitas:**
+
+- **Environment & Real API Readiness** (`vite.config.ts`, `.env`):
+  - Vite proxy configuration untuk forwarding `/api/*` ke real backend saat MSW disabled
+  - Proxy aktif berdasarkan `VITE_API_BASE_URL` — kosong = same-origin (MSW), terisi = forward ke backend
+  - Switch mode via `.env`: `VITE_ENABLE_MSW=true` untuk MSW, `false` + `VITE_API_BASE_URL` untuk real API
+- **Global 401/403 HTTP Error Interceptor** (`src/api/client.ts`, `src/main.tsx`):
+  - Export `setHttpErrorHandler()` dari client.ts — global callback untuk HTTP errors
+  - Di `request()`, deteksi `status === 401` → trigger handler → `logout()` + redirect `/login`
+  - Deteksi `status === 403` → trigger handler → redirect ke `/forbidden`
+  - Handler di-set di `main.tsx` menggunakan `router.navigate()` untuk navigasi tanpa full reload
+- **Dashboard Content** (`src/app/dashboard/page.tsx`):
+  - Summary cards: Total Users, Total Requests, Audit Log Entries (menggunakan hooks TanStack Query yang sudah ada)
+  - Recent Activity table: 5 audit logs terbaru dengan kolom Actor, Action, Timestamp
+  - Link "View All Audit Logs →" navigasi ke `/audit-logs`
+  - Loading state via `isLoading` dari masing-masing query
+- **Reusable ErrorState Component** (`src/app/_components/error-state.tsx`):
+  - Props: `message?` (pesan error), `onRetry?` (callback untuk tombol Retry)
+  - Tampilan: red border box dengan pesan error + tombol Retry opsional
+  - Menggantikan inline error states di users, requests, dan audit-logs pages
+- **Reusable EmptyState Component** (`src/app/_components/empty-state.tsx`):
+  - Props: `message?` (pesan custom)
+  - Tampilan: center-aligned text dalam border box
+  - Menggantikan inline empty states di users, requests, dan audit-logs pages
+- **Finalisasi**:
+  - Fix null safety: `error.message` → `error?.message` di audit-logs list page
+  - Empty state ditampilkan terpisah dari error state (sebelumnya digabung)
+  - Semua list page konsisten: loading → error → empty → data

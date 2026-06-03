@@ -23,6 +23,7 @@ import ForbiddenPage from "@/app/forbidden";
 
 import "./index.css";
 import AuthGuard from "@/app/_components/auth-guard";
+import { setHttpErrorHandler } from "@/api/client";
 
 // Tanstack Query client
 const queryClient = new QueryClient({
@@ -69,6 +70,16 @@ const router = createBrowserRouter([
   },
   
 ]);
+
+// Global HTTP error handler — triggers on 401/403 from any API call
+setHttpErrorHandler((status) => {
+  if (status === 401) {
+    localStorage.removeItem('auth_user');
+    router.navigate('/login', { replace: true });
+  } else if (status === 403) {
+    router.navigate('/forbidden', { replace: true });
+  }
+});
 
 async function startApp() {
   if (import.meta.env.VITE_ENABLE_MSW === 'true') {

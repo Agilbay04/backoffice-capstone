@@ -19,6 +19,8 @@ import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { ApiClientError } from '@/api/client';
 import { Pagination } from '@/app/_components/ui/pagination';
+import { ErrorState } from '@/app/_components/error-state';
+import { EmptyState } from '@/app/_components/empty-state';
 import { useUserListQuery } from '@/app/users/_hooks/use-user-list-query';
 import { useCreateUserMutation } from '@/app/users/_hooks/use-create-user-mutation';
 import { useDeleteUserMutation } from './_hooks/use-delete-user-mutation';
@@ -89,18 +91,17 @@ export default function UsersPage() {
     }
 
     if (error) {
-      return (
-        <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-          <span className="text-sm font-medium text-red-600">{error?.message}</span>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
-        </div>
-      );
+      return <ErrorState message={error?.message} onRetry={() => refetch()} />;
+    }
+
+    if (!data?.items || data.items.length === 0) {
+      return <EmptyState message="No users found." />;
     }
 
     return (
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <UserTable
-          data={data?.items ?? []}
+          data={data.items}
           onDelete={async (id) => { await deleteMutation.mutateAsync(id); }}
           isDeleting={deleteMutation.isPending}
         />
@@ -185,6 +186,6 @@ function roleOptions(): IDropdownOption[] {
   if (MOCK_ROLES?.length === 0) return [];
   return MOCK_ROLES?.map((role) => ({
     key: role?.code,
-    value: role?.code
+    value: role?.name
   }));
 };

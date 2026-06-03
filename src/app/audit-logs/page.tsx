@@ -5,9 +5,10 @@ import { AUDIT_LOG_PARAMS_DEFAULT } from '@/app/audit-logs/_const/consts';
 import SearchInput from '@/app/_components/search-input';
 import { useAuditLogListQuery } from '@/app/audit-logs/_hooks/use-audit-log-list-query';
 import AuditLogTable from '@/app/audit-logs/_components/audit-log-table';
-import { Button } from '@/app/_components/ui/button';
 import { Spinner } from '@/app/_components/ui/spinner';
 import { Pagination } from '@/app/_components/ui/pagination';
+import { ErrorState } from '@/app/_components/error-state';
+import { EmptyState } from '@/app/_components/empty-state';
 
 export default function AuditLogsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -56,17 +57,16 @@ export default function AuditLogsPage() {
         }
 
         if (error) {
-            return (
-                <div className="w-full h-64 bg-white rounded-lg border border-red-200 shadow-sm flex flex-col items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-red-600">{error.message}</span>
-                    <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
-                </div>
-            );
+            return <ErrorState message={error?.message} onRetry={() => refetch()} />;
+        }
+
+        if (!data?.items || data.items.length === 0) {
+            return <EmptyState message="No audit logs found." />;
         }
 
         return (
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                <AuditLogTable data={data?.items ?? []} />
+                <AuditLogTable data={data.items} />
                 <Pagination
                     page={data?.meta?.page ?? 1}
                     totalPages={data?.meta?.total_page ?? 1}

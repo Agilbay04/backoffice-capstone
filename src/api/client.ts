@@ -1,5 +1,11 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
+let httpErrorHandler: ((status: number) => void) | null = null;
+
+export function setHttpErrorHandler(handler: (status: number) => void) {
+  httpErrorHandler = handler;
+}
+
 export class ApiClientError extends Error {
     status: number;
     code?: string;
@@ -23,11 +29,19 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
     if (!response.ok) {
         const body = await response.json().catch(() => ({}));
-        throw new ApiClientError({
+        const error = new ApiClientError({
             status: response.status,
             message: body?.message ?? response.statusText,
             code: body?.code,
         });
+
+        if (response.status === 401 && httpErrorHandler) {
+            httpErrorHandler(401);
+        } else if (response.status === 403 && httpErrorHandler) {
+            httpErrorHandler(403);
+        }
+
+        throw error;
     }
 
     return response.json();
