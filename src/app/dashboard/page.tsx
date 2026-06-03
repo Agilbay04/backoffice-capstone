@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUserListQuery } from '@/app/users/_hooks/use-user-list-query';
 import { useRequestListQuery } from '@/app/requests/_hooks/use-request-list-query';
 import { useAuditLogListQuery } from '@/app/audit-logs/_hooks/use-audit-log-list-query';
@@ -13,6 +13,7 @@ import {
 import { Spinner } from '@/app/_components/ui/spinner';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const { data: usersData, isLoading: usersLoading } = useUserListQuery({ page: 1, perPage: 1 });
   const { data: requestsData, isLoading: requestsLoading } = useRequestListQuery({ page: 1, perPage: 1 });
   const { data: auditData, isLoading: auditLoading } = useAuditLogListQuery({ page: 1, perPage: 5 });
@@ -24,16 +25,19 @@ export default function DashboardPage() {
       label: 'Total Users',
       value: usersData?.meta?.total ?? 0,
       color: 'bg-blue-50 border-blue-200 text-blue-700',
+      onClick: () => navigate('/users'),
     },
     {
       label: 'Total Requests',
       value: requestsData?.meta?.total ?? 0,
       color: 'bg-amber-50 border-amber-200 text-amber-700',
+      onClick: () => navigate('/requests'),
     },
     {
       label: 'Audit Log Entries',
       value: auditData?.meta?.total ?? 0,
       color: 'bg-purple-50 border-purple-200 text-purple-700',
+      onClick: () => navigate('/audit-logs'),
     },
   ];
 
@@ -55,10 +59,11 @@ export default function DashboardPage() {
             {summaryCards.map((card) => (
               <div
                 key={card.label}
-                className={`rounded-lg border shadow-sm p-6 ${card.color}`}
+                className={`rounded-lg border shadow-sm p-6 cursor-pointer ${card.color}`}
+                onClick={card.onClick}
               >
                 <p className="text-sm font-medium opacity-80">{card.label}</p>
-                <p className="text-3xl font-bold mt-1">{card.value}</p>
+                <p className="text-3xl font-bold mt-1 hover:underline">{card.value}</p>
               </div>
             ))}
           </div>

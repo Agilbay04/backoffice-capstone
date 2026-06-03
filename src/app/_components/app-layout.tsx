@@ -20,7 +20,12 @@ export default function AppLayout() {
       {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-white p-5 flex flex-col gap-5">
         <h2 className="text-xl font-bold tracking-wider text-center text-white">
-          Back Office
+          <div className="flex items-center gap-2 justify-center cursor-pointer" onClick={() => navigate('/')}>
+            <span className="text-sm">
+              <img className="bg-white rounded-full p-1.5" src="/public/favicon.svg" alt="Logo" />
+            </span>
+            Back Office
+          </div>
         </h2>
         <nav className="flex flex-col gap-2 mt-4">
           {NAV_ITEMS.map((item) => (
