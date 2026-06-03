@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/app/auth/_hooks/use-auth";
+import { UseAuth } from "@/app/auth/_hooks/use-auth";
 
 export default function AuthGuard() {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = UseAuth();
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
