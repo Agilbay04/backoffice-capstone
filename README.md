@@ -186,7 +186,7 @@ Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan 
   - `retry: 1` — satu kali retry otomatis jika query gagal
   - `refetchOnWindowFocus: false` — tidak refetch saat tab kembali aktif
   - Client dibungkus dalam `<QueryClientProvider>` di root render tree
-- **Query Key Factory** (`src/api/query-keys.ts`): Membuat factory functions untuk query keys terstruktur per domain (`users`, `requests`, `auditLogs`) dengan hierarki `all`, `lists()`, `list(filters)`, `details()`, `detail(id)`.
+- **Query Key Factory** (`src/api/query-keys.ts`): Membuat factory functions untuk query keys terstruktur per domain (`users`, `requests`, `auditLogs`) dengan hierarki `all`, `lists()`, `list(filters)`, `details()`, `detail(id)`. Key `auditLogs` telah digunakan oleh hooks di modul Audit Logs.
 - **Query & Mutation Hooks Users** (`src/app/users/_hooks/`): Membuat 5 hooks untuk modul Users:
   - `useUserList(filters)` — query list dengan filter
   - `useUser(id)` — query single user by id
@@ -228,4 +228,13 @@ Hari keenam integrasi TanStack Query untuk manajemen server state, menggantikan 
   - Replace separate delete confirmation dialog → header action button langsung
   - Mempertahankan panel "Update Status" yang unik untuk modul Requests
   - Loading/error state via `isLoading` / `error` dari React Query
-- **Catatan**: Modul Audit Logs belum di-refactor dan masih menggunakan pola `useState` + `useEffect` + fetch manual.
+- **Audit Logs Hooks & Refactor** (`src/app/audit-logs/_hooks/`): Membuat 2 hooks untuk modul Audit Logs:
+  - `useAuditLogList(filters)` — query list dengan filter search
+  - `useAuditLog(id)` — query single audit log by id
+- **AuditLogsPage Refactor** (`src/app/audit-logs/page.tsx`):
+  - Replace `useState` + `useEffect` + `auditLogsApi.list()` → `useAuditLogList(filters)`
+  - Loading state via `isLoading`, error state via `error`, retry via `refetch()`
+- **AuditLogDetailPage Refactor** (`src/app/audit-logs/[id]/page.tsx`):
+  - Replace `useState` + `useEffect` + `auditLogsApi.getById()` → `useAuditLog(id)`
+  - Loading state via `isLoading`, error state via `error`
+- **Optimasi Loading & Error State**: Semua modul (Users, Requests, AuditLogs) kini memanfaatkan properti bawaan TanStack Query (`isPending`, `isError`, `error`) menggantikan `useState` manual untuk loading/error state, termasuk pada komponen table (`UserTable`, `RequestTable`) yang menerima prop `isDeleting` dari parent mutation.
