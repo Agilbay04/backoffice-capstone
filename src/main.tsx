@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider, Navigate }
 from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { AuthProvider } from "@/app/auth/_hooks/use-auth";
+import { AuthProvider } from "@/app/auth/_provider/auth-provider";
 
 import AppLayout from "@/app/_components/app-layout";
 import AuthLayout from "@/app/auth/_components/auth-layout";

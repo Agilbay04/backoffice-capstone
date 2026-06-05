@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } 
-from "react";
+import { createContext, useState, useCallback, type ReactNode } from "react";
 import type { IAuthRequest, IAuthResponse } from "@/types/domain";
 import { authApi } from "@/api/auth/auth";
 import { ApiClientError } from "@/api/client";
@@ -7,9 +6,9 @@ import { ApiClientError } from "@/api/client";
 interface IAuthContextType {
     user: IAuthResponse | null;
     isAuthenticated: boolean;
-    login: (authRequest: IAuthRequest) => Promise<{ 
-        success: boolean; 
-        error?: string 
+    login: (authRequest: IAuthRequest) => Promise<{
+        success: boolean;
+        error?: string;
     }>;
     logout: () => void;
 }
@@ -18,15 +17,15 @@ const AuthContext = createContext<IAuthContextType | null>(null);
 
 const AUTH_KEY = import.meta.env.VITE_AUTH_KEY || "auth_user";
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<IAuthResponse | null>(() => {
         const saved = localStorage.getItem(AUTH_KEY);
         return saved ? JSON.parse(saved) as IAuthResponse : null;
     });
 
-    const login = useCallback(async (authRequest: IAuthRequest): Promise<{ 
-        success: boolean; 
-        error?: string 
+    const login = useCallback(async (authRequest: IAuthRequest): Promise<{
+        success: boolean;
+        error?: string;
     }> => {
         try {
             const response = await authApi.login(authRequest);
@@ -53,10 +52,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 }
 
-export function UseAuth(): IAuthContextType {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
-}
+export { AuthProvider, AuthContext };
+export type { IAuthContextType };

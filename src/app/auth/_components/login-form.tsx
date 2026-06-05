@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 
-import { UseAuth } from "@/app/auth/_hooks/use-auth";
+import { useAuth } from "@/app/auth/_hooks/use-auth";
 import { Button } from "@/app/_components/ui/button";
 import { FormInput } from "@/app/_components/ui/form-input";
 import { Spinner } from "@/app/_components/ui/spinner";
@@ -19,7 +19,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-    const { login } = UseAuth();
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const {
